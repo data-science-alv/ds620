@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case File 01 · The Empty Case</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16181d; --ink2:#252932; --ink3:#343a46;
+  --paper:#f3efe6; --card:#fffdf8; --line:#ddd4c2; --line2:#e9e2d3;
+  --text:#22211d; --muted:#6a6455;
+  --brass:#9a7630; --brass-hi:#d6be80; --brass-soft:#f1e6c9;
+  --pass:#2d7a4b; --pass-soft:#e1efe6;
+  --assist:#a86f0c; --assist-soft:#f6e9cc;
+  --fail:#a5372c; --fail-soft:#f6e0dc;
+  --code-bg:#1c1f26; --code-fg:#e9e5da; --code-dim:#8f8a7c;
+  --serif:'Fraunces', Georgia, 'Times New Roman', serif;
+  --sans:'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  --r:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.5}
+code{font-family:var(--mono);font-size:.88em;background:var(--line2);padding:.08em .35em;border-radius:4px}
+pre{font-family:var(--mono);font-size:13px;background:var(--code-bg);color:var(--code-fg);padding:12px 14px;border-radius:8px;overflow-x:auto;line-height:1.55;margin:.6em 0}
+button{font-family:var(--sans);font-size:15px;cursor:pointer}
+button:disabled{cursor:not-allowed}
+a{color:var(--brass)}
+
+/* ---------- header ---------- */
+.top{background:var(--ink);color:#fff;border-bottom:3px solid var(--brass)}
+.top-in{max-width:1480px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;gap:2px;margin-right:auto;min-width:0}
+.kick{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass-hi);font-weight:600}
+.brand h1{font-family:var(--serif);font-weight:650;font-size:24px;margin:0;line-height:1.15}
+.track{display:flex;gap:6px;flex-wrap:wrap}
+.pill{font-size:12.5px;padding:5px 10px;border-radius:999px;border:1px solid var(--ink3);color:#c9c4b6;white-space:nowrap}
+.pill.on{border-color:var(--brass-hi);color:#fff}
+.pill.done{background:var(--ink3);color:#fff;border-color:var(--ink3)}
+.dbstat{font-size:12.5px;color:#c9c4b6;display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:#7d776a}
+.dot.ok{background:#5fbf86}.dot.err{background:#e0705f}.dot.busy{background:var(--brass-hi);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.btn-report{background:var(--brass);color:#fff;border:0;border-radius:8px;padding:9px 14px;font-weight:600}
+.btn-report:hover{background:#86661f}
+
+/* ---------- layout ---------- */
+.app{max-width:1480px;margin:0 auto;padding:20px;display:grid;grid-template-columns:250px minmax(0,1fr) 290px;gap:20px;align-items:start}
+@media (max-width:1180px){.app{grid-template-columns:230px minmax(0,1fr)}.schema{grid-column:1 / -1}}
+@media (max-width:780px){.app{grid-template-columns:minmax(0,1fr);padding:14px 16px}.top-in{padding:12px 16px}.brand h1{font-size:20px}}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+
+/* ---------- sidebar ---------- */
+.side{padding:14px 12px;position:sticky;top:12px}
+@media (max-width:780px){.side{position:static}}
+.room{margin-bottom:12px}
+.room:last-child{margin-bottom:0}
+.room h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:4px 6px 6px;display:flex;align-items:center;gap:6px;font-weight:700}
+.room.locked h3{opacity:.55}
+.pz{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:8px;padding:7px 8px;color:var(--text)}
+.pz:hover:not(:disabled){background:var(--line2)}
+.pz.cur{background:var(--brass-soft);border-color:#e0cf9f}
+.pz:disabled{opacity:.45}
+.pz .t{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.pz .t b{font-weight:600;font-size:14.5px}
+.pz .t small{color:var(--muted);font-size:12.5px}
+.ico{flex:0 0 22px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--line);background:#fff}
+.ico svg{width:13px;height:13px}
+.ico.passed{background:var(--pass);border-color:var(--pass)}
+.ico.assisted{background:var(--assist);border-color:var(--assist)}
+.ico.locked{background:var(--line2)}
+
+/* ---------- main ---------- */
+.main{display:flex;flex-direction:column;gap:16px;min-width:0}
+.case{padding:22px 24px}
+@media (max-width:780px){.case{padding:18px 16px}}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.tag{background:var(--line2);color:var(--ink2);padding:3px 8px;border-radius:6px;letter-spacing:.02em;text-transform:none;font-weight:600}
+.case h2{font-family:var(--serif);font-weight:650;font-size:28px;margin:8px 0 10px;line-height:1.15}
+.story{font-family:var(--serif);font-size:17.5px;line-height:1.55;color:#3b382f;margin:0 0 14px}
+.task{border-left:4px solid var(--brass);background:var(--brass-soft);padding:12px 14px;border-radius:0 8px 8px 0}
+.task .lbl{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);font-weight:700;display:block;margin-bottom:2px}
+details.notes{margin-top:14px;border:1px solid var(--line);border-radius:8px;background:#fff}
+details.notes summary{cursor:pointer;padding:10px 14px;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::before{content:'';width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s}
+details.notes[open] summary::before{transform:rotate(45deg)}
+details.notes .nb{padding:0 16px 12px;font-size:15.5px}
+details.notes .nb p{margin:.5em 0}
+
+/* editor */
+.work{padding:0;overflow:hidden}
+.edhead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:var(--ink2);color:#d9d4c7;font-size:13px;flex-wrap:wrap}
+.edhead .k{font-family:var(--mono);font-size:12px;color:var(--code-dim)}
+textarea.sql{display:block;width:100%;min-height:150px;resize:vertical;border:0;outline:0;background:var(--code-bg);color:var(--code-fg);font-family:var(--mono);font-size:14.5px;line-height:1.6;padding:14px 16px;tab-size:2}
+textarea.sql::placeholder{color:#6f6a5e}
+.actions{display:flex;gap:8px;padding:12px 14px;flex-wrap:wrap;border-top:1px solid var(--line);background:#fbf8f1}
+.b{border-radius:8px;padding:9px 14px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--text)}
+.b:hover:not(:disabled){border-color:#c9bea7}
+.b.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.b.primary:hover:not(:disabled){background:var(--ink3)}
+.b.ev{background:var(--brass);color:#fff;border-color:var(--brass)}
+.b.ev:hover:not(:disabled){background:#86661f}
+.b:disabled{opacity:.5}
+.spacer{flex:1}
+
+.fb{margin:0 14px 12px;padding:11px 14px;border-radius:8px;font-size:15px;display:none}
+.fb.show{display:block}
+.fb.bad{background:var(--fail-soft);color:#6f2018;border:1px solid #ecc5be}
+.fb.good{background:var(--pass-soft);color:#1c4f30;border:1px solid #bcdcc8}
+.fb.warn{background:var(--assist-soft);color:#5f3f05;border:1px solid #ead29d}
+.fb .debrief{margin-top:8px;color:var(--text)}
+
+.results{border-top:1px solid var(--line)}
+.rhead{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;font-size:13px;color:var(--muted);gap:8px;flex-wrap:wrap}
+.tablewrap{overflow:auto;max-height:340px;border-top:1px solid var(--line2)}
+table.res{border-collapse:collapse;width:100%;font-size:14px}
+table.res th{position:sticky;top:0;background:#f4efe3;text-align:left;font-weight:700;padding:7px 12px;border-bottom:1px solid var(--line);white-space:nowrap;font-family:var(--mono);font-size:12.5px}
+table.res td{padding:6px 12px;border-bottom:1px solid var(--line2);white-space:nowrap}
+table.res tr:nth-child(even) td{background:#fcfaf5}
+.null{color:#a49d8c;font-style:italic;font-family:var(--mono);font-size:12px}
+.err{margin:12px 14px;padding:11px 14px;background:var(--fail-soft);border:1px solid #ecc5be;border-radius:8px;font-size:14.5px}
+.err .em{font-family:var(--mono);font-size:13px;color:#6f2018;display:block;margin-bottom:4px;white-space:pre-wrap}
+.empty{padding:16px 14px;color:var(--muted);font-size:14.5px}
+
+/* mc */
+.mc{padding:14px}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;background:#fff;cursor:pointer}
+.opt:hover{border-color:#c9bea7}
+.opt input{margin-top:4px;accent-color:var(--brass)}
+.opt.sel{border-color:var(--brass);background:var(--brass-soft)}
+
+/* hints */
+.hints{padding:16px 18px}
+.hints h4{margin:0 0 10px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.hb{border:1px dashed #c9bea7;background:#fff;border-radius:8px;padding:8px 12px;font-weight:600;color:var(--ink2)}
+.hb:disabled{color:#9a937f;border-color:var(--line)}
+.hb.help{border-style:solid;border-color:var(--assist);color:var(--assist)}
+.hb.help:disabled{border-color:var(--line);color:#9a937f}
+.wait{font-size:13px;color:var(--muted)}
+.hint{background:#fff;border:1px solid var(--line);border-left:4px solid var(--ink3);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:10px;font-size:15.5px}
+.hint .hl{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;display:block}
+.confirm{background:var(--assist-soft);border:1px solid #ead29d;border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:15px}
+.confirm .row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.solution{border:1px solid #ead29d;border-left:4px solid var(--assist);border-radius:0 8px 8px 0;background:#fff;padding:10px 14px;margin-bottom:10px}
+.solution .hl{color:var(--assist);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;display:block}
+
+/* reveal */
+.reveal{padding:28px;background:var(--ink);color:#efe9da;border:0}
+.reveal .kick{margin-bottom:6px}
+.reveal h2{font-family:var(--serif);font-size:34px;margin:0 0 12px;color:#fff;font-weight:650}
+.reveal p{font-family:var(--serif);font-size:18px;line-height:1.6;margin:0 0 12px}
+.reveal .b{margin-top:6px}
+
+/* schema */
+.schema{padding:14px 14px 10px;position:sticky;top:12px}
+@media (max-width:1180px){.schema{position:static}}
+.schema h3{margin:0 0 10px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.tbl{border:1px solid var(--line);border-radius:8px;margin-bottom:12px;overflow:hidden;background:#fff}
+.tbl .tn{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--ink2);color:#fff;font-family:var(--mono);font-size:13.5px;font-weight:600}
+.tbl .tn button{background:none;border:1px solid var(--ink3);color:var(--brass-hi);border-radius:6px;font-size:12px;padding:3px 8px}
+.col{display:flex;justify-content:space-between;gap:8px;padding:5px 10px;border-top:1px solid var(--line2);font-size:13px}
+.col .cn{font-family:var(--mono);font-size:12.5px;display:flex;align-items:center;gap:6px}
+.col .ct{color:var(--muted);font-family:var(--mono);font-size:11.5px;text-align:right}
+.pk{font-size:10px;font-weight:700;background:var(--brass);color:#fff;border-radius:4px;padding:1px 4px;font-family:var(--sans)}
+.small{font-size:13px;color:var(--muted)}
+.linkbtn{background:none;border:0;color:var(--brass);padding:0;font-size:13px;text-decoration:underline;font-weight:600}
+
+/* intro + dialogs */
+.intro{max-width:820px;margin:28px auto;padding:0 16px}
+.intro .panel{padding:30px 32px}
+@media (max-width:780px){.intro .panel{padding:22px 18px}}
+.intro .kick{color:var(--brass)}
+.intro h2{font-family:var(--serif);font-size:34px;margin:6px 0 14px;font-weight:650;line-height:1.1}
+.intro p.s{font-family:var(--serif);font-size:18.5px;line-height:1.6;margin:0 0 12px;color:#3b382f}
+.intro ol{padding-left:20px;margin:6px 0 18px}
+.intro ol li{margin-bottom:6px}
+.intro h4{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:22px 0 6px}
+dialog{border:0;border-radius:12px;padding:0;max-width:560px;width:calc(100% - 32px);background:var(--card);color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(15,16,20,.55)}
+.dh{background:var(--ink);color:#fff;padding:16px 20px;border-bottom:3px solid var(--brass)}
+.dh h3{margin:2px 0 0;font-family:var(--serif);font-size:22px;font-weight:650}
+.db{padding:16px 20px}
+.cl{list-style:none;padding:0;margin:0 0 14px}
+.cl li{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line2);font-size:14.5px}
+.cl li .st{margin-left:auto;font-size:12.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.st.passed{color:var(--pass)}.st.assisted{color:var(--assist)}.st.none{color:var(--fail)}
+.ico.none{background:var(--fail);border-color:var(--fail)}
+.codebox{border:1.5px solid var(--brass);border-radius:8px;padding:12px;text-align:center;background:var(--brass-soft);margin-bottom:12px}
+.codebox .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);font-weight:700}
+.codebox .code{font-family:var(--mono);font-size:18px;font-weight:600;letter-spacing:.04em;word-break:break-all}
+.df{display:flex;gap:8px;justify-content:flex-end;padding:0 20px 18px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:8px;border-left:4px solid var(--brass);opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+/* week 2+: specs, paper cards, registrar notes */
+table.spec{border-collapse:collapse;width:100%;margin:10px 0 4px;font-size:14.5px;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+table.spec th{background:#f4efe3;text-align:left;padding:6px 10px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+table.spec td{padding:6px 10px;border-top:1px solid var(--line2);vertical-align:top}
+.task table.spec{background:#fffdf8}
+.paper{margin:10px 0 4px;background:#fbf7ec;border:1px solid #e3d7b8;border-radius:6px;padding:4px;box-shadow:0 1px 0 #e3d7b8, 0 3px 0 -1px #efe6cf;overflow-x:auto}
+.paper table{border-collapse:collapse;width:100%;font-family:'Courier New',Courier,monospace;font-size:14px;color:#2b2a26}
+.paper th{text-align:left;font-size:11.5px;color:#8a7b55;padding:5px 8px;border-bottom:1px dashed #d8c99f;font-weight:600}
+.paper td{padding:5px 8px;border-bottom:1px dashed #ebe1c6;vertical-align:top}
+.paper td:not(:nth-child(2)){white-space:nowrap}
+.paper table{font-size:13.5px}
+.paper .blank{color:#b2a47e;font-style:italic}
+.regnotes{margin-top:12px;border:1px solid #cfdcd2;background:var(--pass-soft);border-radius:8px;padding:10px 14px;font-size:15px}
+.regnotes .hl{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--pass);font-weight:700;display:block;margin-bottom:4px}
+.regnotes p{margin:.35em 0}
+.err .det{display:block;font-family:var(--mono);font-size:12.5px;color:#7a3a30;margin-bottom:6px;white-space:pre-wrap}
+.okmsg{margin:12px 14px;padding:10px 14px;background:#f1f6f2;border:1px solid #cfe1d4;border-radius:8px;font-size:14.5px}
+.erds{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:10px 0 4px}
+.erd{border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px 12px}
+.erd h5{margin:0 0 8px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass)}
+.ent{border:1.5px solid var(--ink3);border-radius:6px;margin:0 0 8px;font-family:var(--mono);font-size:12px;overflow:hidden}
+.ent b{display:block;background:var(--ink2);color:#fff;padding:3px 8px;font-size:12.5px}
+.ent span{display:block;padding:2px 8px;border-top:1px solid var(--line2)}
+.ent i{font-style:normal;font-size:10px;font-weight:700;color:#fff;background:var(--brass);border-radius:3px;padding:0 3px;margin-left:4px}
+.ent i.fk{background:var(--ink3)}
+.rel{font-size:12.5px;color:var(--muted);margin:2px 0 8px}
+pre.plan{font-size:12px;background:#22262e;max-height:260px}
+.hidden{display:none !important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <span class="kick" id="kick">DS 620 · Case Lab</span>
+      <h1 id="hTitle">Case File 01 · The Empty Case</h1>
+    </div>
+    <nav class="track" id="track" aria-label="Rooms"></nav>
+    <span class="dbstat" id="dbstat"><span class="dot busy" id="dbdot"></span><span id="dbtxt">Opening case files…</span></span>
+    <button class="btn-report" id="btnReport" type="button">Progress report</button>
+  </div>
+</header>
+
+<section class="intro hidden" id="intro" aria-labelledby="introTitle">
+  <div class="panel">
+    <span class="kick" id="introKick"></span>
+    <h2 id="introTitle"></h2>
+    <div id="introStory"></div>
+    <h4>How this works</h4>
+    <ol id="introHow"></ol>
+    <button class="b primary" id="btnStart" type="button" disabled>Loading the database…</button>
+  </div>
+</section>
+
+<main class="app hidden" id="app">
+  <aside class="panel side" id="side" aria-label="Rooms and puzzles"></aside>
+  <section class="main" id="main" aria-live="polite"></section>
+  <aside class="panel schema" id="schema" aria-label="Database schema"></aside>
+</main>
+
+<dialog id="dlgReport" aria-labelledby="rTitle">
+  <div class="dh"><span class="kick">Progress report</span><h3 id="rTitle">Case File 01 · The Empty Case</h3></div>
+  <div class="db">
+    <p class="small" id="rWhen"></p>
+    <ul class="cl" id="rList"></ul>
+    <div class="codebox"><div class="lbl">Verification code</div><div class="code" id="rCode">…</div></div>
+    <p class="small">No names or personal information are recorded. Download the PDF and upload it to this week's Case Lab assignment in Canvas. You can generate a new report at any time; each one gets its own code.</p>
+    <p class="small hidden" id="rErr" style="color:var(--fail)"></p>
+  </div>
+  <div class="df">
+    <button class="b" type="button" id="rClose">Close</button>
+    <button class="b ev" type="button" id="rPdf">Download PDF</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js" defer></script>
+<script type="module">
+// Shared by build.mjs (Node) and the room page (browser). Keep identical in both.
+const CANON = (() => {
+  const enc = new TextEncoder();
+  function cell(v) {
+    if (v === null || v === undefined) return '∅';
+    if (v instanceof Date) return v.toISOString();
+    if (typeof v === 'object') return JSON.stringify(v);
+    return String(v);
+  }
+  const show = s => s === '∅' ? 'NULL' : s;
+  function perms(n) {
+    const out = [];
+    const rec = (pre, rest) => { if (!rest.length) { out.push(pre); return; }
+      rest.forEach((x, i) => rec(pre.concat([x]), rest.slice(0, i).concat(rest.slice(i + 1)))); };
+    rec([], Array.from({ length: n }, (_, i) => i));
+    return n <= 4 ? out : [out[0]];
+  }
+  async function sha(s) {
+    const b = await crypto.subtle.digest('SHA-256', enc.encode(s));
+    return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+  }
+  async function hashes(salt, pid, rows, order) {
+    const lines = rows.map(r => order.map(i => cell(r[i])).join('␟'));
+    const ordered = await sha(salt + '|' + pid + '|O|' + lines.join('␞'));
+    const unordered = await sha(salt + '|' + pid + '|U|' + lines.slice().sort().join('␞'));
+    return { ordered, unordered };
+  }
+  // Query results. Returns {pass, reason: 'cols'|'rows'|'order'|'values'|null}
+  async function check(salt, pid, exp, fields, rows) {
+    if (fields.length !== exp.ncols) return { pass: false, reason: 'cols' };
+    if (rows.length !== exp.nrows) return { pass: false, reason: 'rows' };
+    let wrongOrder = false;
+    for (const p of perms(fields.length)) {
+      const h = await hashes(salt, pid, rows, p);
+      if (h.unordered === exp.unordered) {
+        if (!exp.ordered || h.ordered === exp.hOrdered) return { pass: true, reason: null };
+        wrongOrder = true;
+      }
+    }
+    return { pass: false, reason: wrongOrder ? 'order' : 'values' };
+  }
+
+  // ---- table structure (CREATE TABLE puzzles) ----
+  const Q_COLS = `SELECT a.attname, format_type(a.atttypid, a.atttypmod), a.attnotnull
+    FROM pg_attribute a JOIN pg_class c ON c.oid = a.attrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relname = $1 AND c.relkind = 'r' AND a.attnum > 0 AND NOT a.attisdropped
+    ORDER BY a.attnum`;
+  const Q_PK = `SELECT a.attname FROM pg_constraint k JOIN pg_class c ON c.oid = k.conrelid
+    JOIN pg_namespace n ON n.oid = c.relnamespace JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum = ANY (k.conkey)
+    WHERE n.nspname = 'public' AND c.relname = $1 AND k.contype = 'p' ORDER BY a.attname`;
+  const Q_FK = `SELECT a.attname, cf.relname, af.attname FROM pg_constraint k
+    JOIN pg_class c ON c.oid = k.conrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+    JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum = k.conkey[1]
+    JOIN pg_class cf ON cf.oid = k.confrelid JOIN pg_attribute af ON af.attrelid = cf.oid AND af.attnum = k.confkey[1]
+    WHERE n.nspname = 'public' AND c.relname = $1 AND k.contype = 'f' ORDER BY a.attname`;
+  function typeLabel(t) {
+    return t.replace(/^character varying/, 'VARCHAR').replace(/^character\b/, 'CHAR')
+      .replace(/^time without time zone$/, 'TIME').replace(/^timestamp without time zone$/, 'TIMESTAMP')
+      .replace(/^double precision$/, 'DOUBLE PRECISION').toUpperCase();
+  }
+  // q(sql, params) must resolve to an array of row arrays
+  async function introspect(q, table) {
+    const cols = (await q(Q_COLS, [table])).map(r => ({ name: r[0], type: typeLabel(r[1]), notnull: !!r[2] }));
+    if (!cols.length) return null;
+    const pk = (await q(Q_PK, [table])).map(r => r[0]);
+    const fks = (await q(Q_FK, [table])).map(r => ({ col: r[0], table: r[1], ref: r[2] }));
+    return { cols, pk, fks };
+  }
+  function compareTable(table, exp, got) {
+    if (!got) return [`There's no table called <code>${table}</code> yet. (Names are case-insensitive unless you put them in double quotes.)`];
+    const issues = [];
+    const gm = Object.fromEntries(got.cols.map(c => [c.name, c]));
+    const em = Object.fromEntries(exp.cols.map(c => [c.name, c]));
+    for (const c of exp.cols) {
+      const g = gm[c.name];
+      if (!g) { issues.push(`Column <code>${c.name}</code> is missing.`); continue; }
+      if (g.type !== c.type) issues.push(`<code>${c.name}</code> is <code>${g.type}</code>; the spec calls for a different type. Re-read what it holds.`);
+      if (!exp.pk.includes(c.name)) {
+        if (c.notnull && !g.notnull) issues.push(`<code>${c.name}</code> is required, but your column allows NULL.`);
+        if (!c.notnull && g.notnull) issues.push(`<code>${c.name}</code> is optional, but your column is NOT NULL.`);
+      }
+    }
+    for (const g of got.cols) if (!em[g.name]) issues.push(`Column <code>${g.name}</code> isn't in the spec.`);
+    if (exp.pk.join(',') !== got.pk.join(',')) issues.push(got.pk.length ? `The primary key is on <code>${got.pk.join(', ')}</code>; check which column should be the key.` : 'The table has no primary key.');
+    const fk = f => `${f.col}->${f.table}.${f.ref}`;
+    const gf = got.fks.map(fk);
+    for (const f of exp.fks) if (!gf.includes(fk(f))) issues.push(`<code>${f.col}</code> should be a foreign key referencing <code>${f.table} (${f.ref})</code>.`);
+    for (const f of got.fks) if (!exp.fks.map(fk).includes(fk(f))) issues.push(`<code>${f.col}</code> has a foreign key the spec doesn't ask for.`);
+    return issues;
+  }
+
+  // ---- table contents (INSERT / UPDATE / DELETE puzzles) ----
+  function compareRows(exp, fields, rows, reveal, opts) {
+    opts = opts || {};
+    const got = rows.map(r => r.map(cell));
+    const key = exp.cols[0];
+    const em = new Map(exp.rows.map(r => [r[0], r])), gm = new Map(got.map(r => [r[0], r]));
+    const issues = [];
+    let bad = 0;
+    for (const [k, er] of em) {
+      const gr = gm.get(k);
+      if (!gr) { issues.push(`${key} ${k} is missing.`); bad++; continue; }
+      er.forEach((v, i) => {
+        if (gr[i] !== v) {
+          bad++;
+          issues.push(reveal ? `${key} ${k}: <code>${exp.cols[i]}</code> is ${esc(show(gr[i]))}; it should be ${esc(show(v))}.`
+                             : `${key} ${k}: <code>${exp.cols[i]}</code> ${opts.diffNote || "doesn't match what it should be."}`);
+        }
+      });
+    }
+    for (const k of gm.keys()) if (!em.has(k)) { bad++; issues.push(`${key} ${k} shouldn't be in the table.`); }
+    if (bad > 6) return [`${bad} values differ from what the table should hold. ${opts.bulkNote || 'Look at the table with a SELECT and compare it with the task.'} Press <b>Reset puzzle</b> to start over from the puzzle's starting point.`];
+    return issues;
+  }
+  function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  // ---- expected errors ("prove the database refuses it") ----
+  function checkError(p, err) {
+    if (!err) return { pass: false, reason: 'noerror' };
+    if (err.code !== p.code) return { pass: false, reason: 'othererror' };
+    if (p.errTable && err.table !== p.errTable) return { pass: false, reason: 'othertable' };
+    if (p.msgIncludes && !(err.message || '').includes(p.msgIncludes)) return { pass: false, reason: 'othererror' };
+    return { pass: true };
+  }
+  // ---- several tables at once ----
+  async function introspectAll(q, tables) { const o = {}; for (const t of tables) o[t] = await introspect(q, t); return o; }
+  function compareTables(tables, exp, got) {
+    const out = [];
+    for (const t of tables) { const iss = compareTable(t, exp[t], got[t]); out.push(...iss.map(x => tables.length > 1 && got[t] ? `<code>${t}</code>: ${x}` : x)); }
+    return out;
+  }
+  // ---- query plans (EXPLAIN (FORMAT JSON)) ----
+  function planNodes(plan) {
+    const out = [];
+    const walk = n => { if (!n) return; out.push({ type: n['Node Type'], rel: n['Relation Name'] || null, index: n['Index Name'] || null }); (n.Plans || []).forEach(walk); };
+    let j = plan; if (typeof j === 'string') j = JSON.parse(j);
+    walk(Array.isArray(j) ? j[0].Plan : j.Plan);
+    return out;
+  }
+  function checkPlan(p, nodes) {
+    const re = new RegExp(p.wantNode);
+    const hit = nodes.some(n => re.test(n.type) && (!p.relation || n.rel === p.relation || n.type === 'Bitmap Index Scan'));
+    return hit ? { pass: true } : { pass: false, chose: nodes.filter(n => n.rel).map(n => `${n.type} on ${n.rel}`).join(', ') || nodes.map(n => n.type).join(' → ') };
+  }
+  return { cell, hashes, check, sha, introspect, compareTable, compareRows, checkError, introspectAll, compareTables, planNodes, checkPlan };
+})();
+
+
+const CFG = {"lab":{"id":1,"code":"W01","course":"DS 620","caseNo":"Case File 01","title":"The Empty Case","week":"Week 1","tables":["collection","guard_rounds"]},"roles":[],"term":"PROTOTYPE","secret":"9ecdc1a093b371647185f22c0754b78b","salt":"ds620-caselab-w01","ok":"reyes-larkspur-W01","codeVersion":1,"intro":{"kicker":"Saturday · 11:42 PM · The Wexley Museum Winter Gala","paragraphs":["The closing toast is under way in the Rotunda when guard M. Ferrante radios from the Larkspur Gallery. A display case on the east wall is empty, and its label has been removed.","The board wants the doors kept shut until the police arrive. Inspector Dana Reyes has two questions before she lets anyone leave: \u003cem>what exactly was taken, and when?\u003c/em>","With the label gone, the only record of what sat in that case is the museum's collection database. You're the museum's data analyst. Tonight, that makes you the one person in the building who can answer her."]},"how":["Three rooms, then a final verdict. Rooms open in order; inside a room, take the puzzles in any order.","Write SQL in the editor and \u003cb>Run\u003c/b> it as often as you like. Running never changes the data.","When your result is what the inspector asked for, press \u003cb>Submit as evidence\u003c/b>. Only submissions count as attempts.","Stuck? Two hints unlock as you work. After both, you can \u003cb>call in the lead detective\u003c/b>: you'll see a worked solution, and that puzzle is marked \u003cb>Assisted\u003c/b> on your report.","Your progress saves in this browser. Use \u003cb>Progress report\u003c/b> at any time to download the PDF you upload to Canvas. It contains no names or personal information."],"reveal":{"title":"The Orrin Locket","paragraphs":["\u003cb>Case 7, east wall.\u003c/b> A seventeenth-century Flemish locket, acquired in 1999 and insured for $485,000.","Okafor's 22:05 all-clear is the last time anyone confirmed it was there. Ferrante found the case empty at 23:40. For ninety-five minutes the Larkspur Gallery went unchecked, while forty-odd guests drifted through and the guards were pulled toward the Rotunda for the toast.","Reyes closes her notebook. \"So it walked out during the party. Which means it walked out with someone who was invited.\"","The security desk kept the guest list on paper. \u003cb>Next week: you rebuild it.\u003c/b>"]},"setups":{"base":"-- The Gala Heist, Case File 1: synthetic data (fictional museum, fictional people)\nCREATE TABLE collection (\n    artifact_id    INTEGER PRIMARY KEY,\n    title          VARCHAR(80)  NOT NULL,\n    category       VARCHAR(30)  NOT NULL,\n    origin         VARCHAR(60),\n    gallery        VARCHAR(40)  NOT NULL,\n    case_number    INTEGER,\n    year_acquired  INTEGER,\n    insured_value  NUMERIC(12,2),\n    status         VARCHAR(20)  NOT NULL\n);\nINSERT INTO collection VALUES (1082, 'Ledger of the Wexley Founders', 'Manuscript', 'American, 1890s', 'Lower Vault', NULL, 1950, 40000.00, 'In Storage');\nINSERT INTO collection VALUES (1245, 'Harbour at First Light', 'Painting', 'American, 1920s', 'Garden Court', NULL, 1977, 40500.00, 'On Display');\nINSERT INTO collection VALUES (1188, 'Book of Hours of Saint-Aure', 'Manuscript', 'French, 15th c.', 'Larkspur Gallery', 9, 1990, 240000.00, 'On Display');\nINSERT INTO collection VALUES (1147, 'The Sundering of Troy', 'Painting', 'Venetian, 1540s', 'Meridian Hall', NULL, 1961, 1450000.00, 'On Display');\nINSERT INTO collection VALUES (1392, 'The Hollin Sampler', 'Textile', 'English, 1782', 'Larkspur Gallery', 12, 1998, 18500.00, 'On Display');\nINSERT INTO collection VALUES (1015, 'The Wren Tapestry Fragment', 'Textile', 'Flemish, 16th c.', 'Larkspur Gallery', NULL, 1987, 130000.00, 'On Loan');\nINSERT INTO collection VALUES (1191, 'Self-Portrait in Grey', 'Painting', 'French, 1880s', 'Garden Court', NULL, 2007, 6500.00, 'On Display');\nINSERT INTO collection VALUES (1265, 'Marble Head of a Youth', 'Sculpture', 'Roman, 2nd c.', 'Rotunda', NULL, 1978, 750000.00, 'On Display');\nINSERT INTO collection VALUES (1111, 'Lacquered Screen of Ten Cranes', 'Textile', 'Japanese, Edo period', 'East Wing', NULL, 2006, 750000.00, 'On Display');\nINSERT INTO collection VALUES (1085, 'Bronze Heron', 'Sculpture', 'Chinese, Ming dynasty', 'Garden Court', NULL, 1983, 750000.00, 'On Display');\nINSERT INTO collection VALUES (1325, 'Amber Chess Set', 'Metalwork', 'Prussian, 1700s', 'East Wing', 14, 2011, 750000.00, 'On Display');\nINSERT INTO collection VALUES (1242, 'Salt-Glaze Bellarmine Jug', 'Ceramics', 'English, 1700s', 'Rotunda', 13, 2003, 18000.00, 'On Display');\nINSERT INTO collection VALUES (1286, 'Majolica Charger with Peacock', 'Ceramics', 'Dutch, Delft', 'East Wing', 9, 1983, 19500.00, 'On Display');\nINSERT INTO collection VALUES (1218, 'Botanical Folio of Hesper Lane', 'Manuscript', 'German, 1400s', 'Rotunda', 6, 1959, 148000.00, 'On Display');\nINSERT INTO collection VALUES (1261, 'Still Life with Pewter Jug', 'Painting', 'Dutch, 1650s', 'Lower Vault', NULL, 1977, 19000.00, 'In Storage');\nINSERT INTO collection VALUES (1038, 'Study of Three Pears', 'Painting', 'English, 1790s', 'Rotunda', NULL, 2000, 11000.00, 'On Display');\nINSERT INTO collection VALUES (1298, 'Gilded Astrolabe', 'Metalwork', 'Persian, 16th c.', 'Larkspur Gallery', 5, 1996, 410000.00, 'On Display');\nINSERT INTO collection VALUES (1106, 'Celadon Lotus Bowl', 'Ceramics', 'Korean, 12th c.', 'Larkspur Gallery', 2, 1994, 275000.00, 'On Display');\nINSERT INTO collection VALUES (1254, 'Bronze Temple Bell', 'Metalwork', 'Syrian, 1400s', 'Meridian Hall', 14, 1987, 43500.00, 'On Display');\nINSERT INTO collection VALUES (1291, 'Gold-Ground Icon of Saint Nikola', 'Painting', 'American, 1920s', 'Rotunda', NULL, 1985, 197000.00, 'On Display');\nINSERT INTO collection VALUES (1355, 'Storm over the Weald', 'Painting', 'Flemish, 1610s', 'Meridian Hall', NULL, 1952, 30000.00, 'On Display');\nINSERT INTO collection VALUES (1247, 'Iron Strongbox with Hidden Lock', 'Metalwork', 'German, 1600s', 'Meridian Hall', 10, 1968, 103000.00, 'On Display');\nINSERT INTO collection VALUES (1346, 'Damascened Dagger', 'Metalwork', 'Indian, Mughal', 'Meridian Hall', 8, 1958, 6000.00, 'On Display');\nINSERT INTO collection VALUES (1372, 'Lustreware Pitcher', 'Ceramics', 'English, 1700s', 'East Wing', 4, 1988, 231000.00, 'On Display');\nINSERT INTO collection VALUES (1010, 'Pewter Communion Flagon', 'Metalwork', 'Syrian, 1400s', 'Meridian Hall', 2, 2006, 143000.00, 'On Display');\nINSERT INTO collection VALUES (1375, 'The Orrin Locket', 'Jewelry', 'Flemish, 17th c.', 'Larkspur Gallery', 7, 1999, 485000.00, 'On Display');\nINSERT INTO collection VALUES (1146, 'Alabaster Mourner', 'Sculpture', 'English, 1860s', 'Rotunda', NULL, 2001, 21000.00, 'In Conservation');\nINSERT INTO collection VALUES (1036, 'Bust of an Unknown Senator', 'Sculpture', 'Etruscan', 'East Wing', 15, 1979, 72000.00, 'On Display');\nINSERT INTO collection VALUES (1105, 'Terracotta Horse and Rider', 'Sculpture', 'French, 1700s', 'Garden Court', 16, 2012, 32500.00, 'On Display');\nINSERT INTO collection VALUES (1101, 'Indigo Resist-Dyed Cloth', 'Textile', 'English, 1750s', 'Rotunda', 7, 1985, 23000.00, 'On Display');\nINSERT INTO collection VALUES (1052, 'Carved Oak Lion', 'Sculpture', 'French, 1700s', 'Meridian Hall', NULL, 1955, 159000.00, 'On Loan');\nINSERT INTO collection VALUES (1141, 'Garnet Parure of Lady Esk', 'Jewelry', 'Scottish, 18th c.', 'Larkspur Gallery', NULL, 1995, 610000.00, 'In Conservation');\nINSERT INTO collection VALUES (1144, 'Ship''s Log of the Caroline', 'Manuscript', 'German, 1400s', 'Meridian Hall', NULL, 2017, 5500.00, 'On Loan');\nINSERT INTO collection VALUES (1159, 'Letters of Ada Tremaine', 'Manuscript', 'English, 1840s', 'Larkspur Gallery', 8, 2004, 95000.00, 'On Display');\nINSERT INTO collection VALUES (1099, 'Blue-and-White Ginger Jar', 'Ceramics', 'English, 1700s', 'East Wing', 17, 1980, 12000.00, 'On Display');\nINSERT INTO collection VALUES (1133, 'Jet Mourning Bracelet', 'Jewelry', 'Victorian', 'Garden Court', 3, 1969, 130000.00, 'On Display');\nINSERT INTO collection VALUES (1268, 'Raku Tea Bowl', 'Ceramics', 'Italian, 1520s', 'Meridian Hall', 13, 1965, 221000.00, 'On Display');\nINSERT INTO collection VALUES (1332, 'Tin-Glazed Tulip Vase', 'Ceramics', 'Italian, 1520s', 'East Wing', 14, 1992, 36000.00, 'On Display');\nINSERT INTO collection VALUES (1341, 'Carnelian Signet', 'Jewelry', 'Georgian', 'East Wing', 8, 1984, 187000.00, 'On Display');\nINSERT INTO collection VALUES (1180, 'Kneeling Archer', 'Sculpture', 'English, 1860s', 'Meridian Hall', 19, 1981, 262000.00, 'On Display');\nINSERT INTO collection VALUES (1045, 'Embroidered Silk Waistcoat', 'Textile', 'English, 1750s', 'Meridian Hall', 2, 2021, 38000.00, 'On Display');\nINSERT INTO collection VALUES (1289, 'Equestrian Bronze of Duke Aldric', 'Sculpture', 'Italian, 1590s', 'Lower Vault', NULL, 1958, 1100000.00, 'In Storage');\nINSERT INTO collection VALUES (1338, 'Winter Orchard, Kent', 'Painting', 'Flemish, 1610s', 'East Wing', NULL, 1961, 39000.00, 'In Conservation');\nINSERT INTO collection VALUES (1285, 'Hand-Coloured Map of Bohemia', 'Manuscript', 'Bohemian, 1600s', 'Meridian Hall', NULL, 1977, 30000.00, 'In Conservation');\nINSERT INTO collection VALUES (1276, 'Illuminated Charter of Bray', 'Manuscript', 'Irish, 1100s', 'Lower Vault', NULL, 1971, 229000.00, 'In Storage');\nINSERT INTO collection VALUES (1307, 'The Marrow Psalter', 'Manuscript', 'English, 14th c.', 'Larkspur Gallery', 11, 1993, 250000.00, 'On Display');\nINSERT INTO collection VALUES (1273, 'The Ferryman''s Daughter', 'Painting', 'English, 1790s', 'Rotunda', NULL, 1985, 151000.00, 'On Display');\nINSERT INTO collection VALUES (1039, 'The Vell Diadem', 'Jewelry', 'Russian, 19th c.', 'Larkspur Gallery', 4, 2000, 520000.00, 'On Display');\nINSERT INTO collection VALUES (1378, 'Quilted Wedding Coverlet', 'Textile', 'West African, 1900s', 'Meridian Hall', 9, 2013, 90000.00, 'On Display');\nINSERT INTO collection VALUES (1353, 'Seed-Pearl Mourning Brooch', 'Jewelry', 'English, 1820s', 'Larkspur Gallery', 6, 1991, 62000.00, 'On Display');\nINSERT INTO collection VALUES (1149, 'Filigree Hair Comb', 'Jewelry', 'Victorian', 'Meridian Hall', 17, 2014, 33500.00, 'On Display');\nINSERT INTO collection VALUES (1236, 'Glass Paperweight Collection', 'Ceramics', 'Chinese, Qing dynasty', 'Rotunda', 17, 1967, 27500.00, 'On Display');\nINSERT INTO collection VALUES (1293, 'Portrait of a Cartographer', 'Painting', 'Dutch, 1662', 'Larkspur Gallery', NULL, 1997, 900000.00, 'On Display');\nINSERT INTO collection VALUES (1272, 'Kashan Prayer Rug', 'Textile', 'English, 1750s', 'Rotunda', 7, 2020, 174000.00, 'On Display');\nINSERT INTO collection VALUES (1129, 'Brass Orrery', 'Metalwork', 'German, 1600s', 'Meridian Hall', 10, 2013, 262000.00, 'On Display');\nINSERT INTO collection VALUES (1339, 'The Calder Gospels', 'Manuscript', 'Northumbrian, 9th c.', 'Meridian Hall', 3, 1972, 680000.00, 'On Display');\nINSERT INTO collection VALUES (1316, 'Enamel Reliquary Pendant', 'Jewelry', 'Limoges, 13th c.', 'Larkspur Gallery', 3, 1989, 300000.00, 'On Display');\nINSERT INTO collection VALUES (1125, 'Silver Gilt Ewer', 'Metalwork', 'Augsburg, 1610', 'Rotunda', 4, 1969, 250000.00, 'On Display');\nINSERT INTO collection VALUES (1143, 'Coral Cameo Ring', 'Jewelry', 'Georgian', 'Rotunda', 13, 1963, 26000.00, 'On Display');\nINSERT INTO collection VALUES (1302, 'Atlas of the Southern Passages', 'Manuscript', 'Portuguese, 1590s', 'East Wing', 6, 2015, 330000.00, 'On Display');\nINSERT INTO collection VALUES (1334, 'The Lantern Bearer', 'Painting', 'English, 1790s', 'Rotunda', NULL, 2016, 42000.00, 'On Display');\n\nCREATE TABLE guard_rounds (\n    round_id    INTEGER PRIMARY KEY,\n    guard_name  VARCHAR(40) NOT NULL,\n    gallery     VARCHAR(40) NOT NULL,\n    check_time  TIME        NOT NULL,\n    note        VARCHAR(120)\n);\nINSERT INTO guard_rounds VALUES (1, 'M. Ferrante', 'Rotunda', '20:30', 'All clear. String quartet set up');\nINSERT INTO guard_rounds VALUES (2, 'R. Okafor', 'Larkspur Gallery', '19:30', 'All clear');\nINSERT INTO guard_rounds VALUES (3, 'R. Okafor', 'Larkspur Gallery', '22:05', 'All clear. Approx. 40 guests viewing');\nINSERT INTO guard_rounds VALUES (4, 'M. Ferrante', 'Garden Court', '20:05', 'All clear');\nINSERT INTO guard_rounds VALUES (5, 'J. Lindqvist', 'East Wing', '20:40', 'All clear');\nINSERT INTO guard_rounds VALUES (6, 'T. Abernathy', 'Rotunda', '22:20', 'All clear. Toast staging begins');\nINSERT INTO guard_rounds VALUES (7, 'R. Okafor', 'Larkspur Gallery', '20:15', 'All clear');\nINSERT INTO guard_rounds VALUES (8, 'M. Ferrante', 'Rotunda', '19:35', 'All clear');\nINSERT INTO guard_rounds VALUES (9, 'J. Lindqvist', 'Lower Vault', '19:15', 'Vault sealed');\nINSERT INTO guard_rounds VALUES (10, 'M. Ferrante', 'Larkspur Gallery', '23:40', 'East wall case EMPTY, label removed. Alarm raised');\nINSERT INTO guard_rounds VALUES (11, 'M. Ferrante', 'Garden Court', '23:20', 'All clear');\nINSERT INTO guard_rounds VALUES (12, 'R. Okafor', 'Larkspur Gallery', '21:35', 'All clear');\nINSERT INTO guard_rounds VALUES (13, 'T. Abernathy', 'Meridian Hall', '20:55', 'All clear');\nINSERT INTO guard_rounds VALUES (14, 'J. Lindqvist', 'Larkspur Gallery', '21:00', 'All clear. Caterers staging in corridor');\nINSERT INTO guard_rounds VALUES (15, 'J. Lindqvist', 'East Wing', '19:45', 'All clear');\nINSERT INTO guard_rounds VALUES (16, 'T. Abernathy', 'Meridian Hall', '21:45', 'All clear');\nINSERT INTO guard_rounds VALUES (17, 'M. Ferrante', 'Rotunda', '21:25', 'All clear');\nINSERT INTO guard_rounds VALUES (18, 'R. Okafor', 'Meridian Hall', '22:40', 'Reassigned to Rotunda for toast');\nINSERT INTO guard_rounds VALUES (19, 'M. Ferrante', 'Garden Court', '21:10', 'Terrace lights flickering. Reported');\nINSERT INTO guard_rounds VALUES (20, 'T. Abernathy', 'Meridian Hall', '19:50', 'All clear');\nINSERT INTO guard_rounds VALUES (21, 'J. Lindqvist', 'Lower Vault', '22:55', 'Vault sealed');\nINSERT INTO guard_rounds VALUES (22, 'J. Lindqvist', 'East Wing', '21:50', 'Side door propped by caterers. Closed it');\nINSERT INTO guard_rounds VALUES (23, 'T. Abernathy', 'Rotunda', '23:15', 'All clear. Guests gathering for toast');\nINSERT INTO guard_rounds VALUES (24, 'J. Lindqvist', 'East Wing', '23:00', 'All clear');\nINSERT INTO guard_rounds VALUES (25, 'T. Abernathy', 'Garden Court', '22:30', 'All clear');\n"},"rooms":[{"id":"R1","name":"Room 1 · The Catalog","blurb":"Reyes won't entertain theories until she's seen what the museum actually holds. Start with the catalog.","short":"Room 1"},{"id":"R2","name":"Room 2 · The Larkspur Gallery","blurb":"Thirteen artifacts call the Larkspur Gallery home. Narrow them down to the one that could have been in that case.","short":"Room 2"},{"id":"R3","name":"Room 3 · The Timeline","blurb":"What is only half the question. Reyes needs to know when, and the insurer wants to know what else is at risk.","short":"Room 3"},{"id":"RF","name":"The Verdict","blurb":"Every clue points the same way. Put them in a single query.","short":"Verdict"}],"puzzles":[{"id":"1A","room":"R1","kind":"sql","concept":"SELECT and FROM","title":"Get the lay of the land","story":"Reyes wants to see everything the museum holds before anyone starts guessing.","task":"Return the \u003ccode>title\u003c/code>, \u003ccode>category\u003c/code> and \u003ccode>gallery\u003c/code> of every artifact in the \u003ccode>collection\u003c/code> table.","notes":"\u003cp>\u003ccode>SELECT\u003c/code> names the columns you want, in the order you want them, separated by commas. \u003ccode>FROM\u003c/code> names the table.\u003c/p>\n\u003cpre>SELECT guard_name, gallery\nFROM guard_rounds;\u003c/pre>\n\u003cp>\u003ccode>SELECT *\u003c/code> returns every column. It's handy for exploring, but evidence should contain only what was asked for.\u003c/p>","hints":["You need three column names separated by commas, then \u003ccode>FROM\u003c/code> and the table name. No \u003ccode>WHERE\u003c/code> clause: she wants every artifact.","The pattern is \u003ccode>SELECT col1, col2, col3 FROM table_name;\u003c/code> and the table is \u003ccode>collection\u003c/code>. Your result should have \u003cb>61 rows\u003c/b>."],"explain":"\u003ccode>SELECT\u003c/code> lists the columns in the order requested; \u003ccode>FROM\u003c/code> names the table. With no \u003ccode>WHERE\u003c/code>, every row comes back.","ordered":false,"setup":"base","sol":"ISA1IDB5TBUbHx8VWVJONkRUFQoLHF8NCwAeBxYCDHhrBX98UgYWCR9IDxUbBB1L","exp":{"ncols":3,"nrows":61,"ordered":false,"unordered":"8ea70e9fdb1b35140203e4facf69b8d13619454f27eea275e35f05bdbc547780"}},{"id":"1B","room":"R1","kind":"sql","concept":"WHERE with text","title":"The crime scene","story":"The empty case is in the Larkspur Gallery. Reyes wants to know everything that belongs there.","task":"Return the \u003ccode>title\u003c/code> and \u003ccode>case_number\u003c/code> of every artifact whose \u003ccode>gallery\u003c/code> is \u003cb>Larkspur Gallery\u003c/b>.","notes":"\u003cp>\u003ccode>WHERE\u003c/code> keeps only the rows where a condition is true.\u003c/p>\n\u003cpre>SELECT guard_name, check_time\nFROM guard_rounds\nWHERE gallery = 'Rotunda';\u003c/pre>\n\u003cp>\u003cb>Text values go in single quotes\u003c/b> and must match exactly, including capitals and spaces: \u003ccode>'Rotunda'\u003c/code> is not \u003ccode>'rotunda'\u003c/code>.\u003c/p>\n\u003cp>In Postgres, \u003ccode>\"double quotes\"\u003c/code> mean a column or table name, so \u003ccode>WHERE gallery = \"Rotunda\"\u003c/code> fails with \u003ci>column \"Rotunda\" does not exist\u003c/i>.\u003c/p>","hints":["Add a \u003ccode>WHERE\u003c/code> clause that compares the \u003ccode>gallery\u003c/code> column to the gallery's name.","Text needs single quotes and an exact match, capitals and spaces included: \u003ccode>WHERE gallery = '…'\u003c/code>. You should get \u003cb>13 rows\u003c/b>."],"explain":"The filter compares text, so the value goes in single quotes and must match the stored value exactly. Some rows have no case number (paintings hang on the wall; loaned and conserved pieces aren't in a case), so \u003ccode>NULL\u003c/code> appears, and that's correct.","ordered":false,"setup":"base","sol":"ISA1IDB5TBUbHx8VWVJONkNULQsMCBFIHms0OTw9VRFCO1xUEREQCh0nOyk3OTZQEhNBO1VDC0VERVRhDRMZGAMFB1JqNlxdFxcAQkg=","exp":{"ncols":2,"nrows":13,"ordered":false,"unordered":"a3568543d3c6aae63943e848586629bc11c02b9718194a6b6701601f7e000267"}},{"id":"1C","room":"R1","kind":"sql","concept":"WHERE with numbers","title":"Follow the money","story":"The insurer's loss adjuster is already on the phone. Before anything else, she wants to know which pieces carry real exposure.","task":"Return the \u003ccode>title\u003c/code> and \u003ccode>insured_value\u003c/code> of every artifact insured for \u003cb>more than $250,000\u003c/b>.","notes":"\u003cp>Comparison operators: \u003ccode>=\u003c/code> \u003ccode>&lt;&gt;\u003c/code> (not equal) \u003ccode>&lt;\u003c/code> \u003ccode>&gt;\u003c/code> \u003ccode>&lt;=\u003c/code> \u003ccode>&gt;=\u003c/code>\u003c/p>\n\u003cpre>SELECT title, year_acquired\nFROM collection\nWHERE year_acquired &lt; 1960;\u003c/pre>\n\u003cp>\u003cb>Numbers take no quotes\u003c/b>, and no dollar signs or thousands separators: write \u003ccode>100000\u003c/code>, not \u003ccode>'$100,000'\u003c/code>.\u003c/p>\n\u003cp>Read the request carefully: \"more than\" is \u003ccode>&gt;\u003c/code>. \u003ccode>&gt;=\u003c/code> also includes the value itself.\u003c/p>","hints":["Numbers are compared without quotes, dollar signs or commas.","\"More than\" means strictly greater: \u003ccode>&gt;\u003c/code>. Two artifacts are insured at exactly 250,000.00, and they should \u003cb>not\u003c/b> appear. Expect \u003cb>17 rows\u003c/b>."],"explain":"\u003ccode>&gt; 250000\u003c/code> keeps values strictly above the threshold. \u003ccode>&gt;=\u003c/code> would also pull in the two pieces insured at exactly $250,000.00.","ordered":false,"setup":"base","sol":"ISA1IDB5TBUbHx8VWVJEOUNEAAAdOgVMABQXYTUiOj8NNF9dHgAaERpCAmslIzYiMFJEOUNEAAAdOgVMABQXS01QR0cdZwABSQ==","exp":{"ncols":2,"nrows":17,"ordered":false,"unordered":"b0d96eb0df666d657951460d297536d8d4d2cd0818d071e89d27ebb245a6e479"}},{"id":"2A","room":"R2","kind":"sql","concept":"AND","title":"What was actually on display?","story":"Pieces in conservation or out on loan weren't in the gallery tonight, so they can't have been in that case.","task":"Return the \u003ccode>title\u003c/code> and \u003ccode>case_number\u003c/code> of Larkspur Gallery artifacts whose \u003ccode>status\u003c/code> is \u003cb>On Display\u003c/b>.","notes":"\u003cp>\u003ccode>AND\u003c/code> joins two conditions; a row is kept only if \u003cb>both\u003c/b> are true.\u003c/p>\n\u003cpre>SELECT guard_name, check_time\nFROM guard_rounds\nWHERE gallery = 'East Wing'\n  AND guard_name = 'J. Lindqvist';\u003c/pre>\n\u003cp>Line breaks and indentation don't matter to Postgres, but they make longer conditions much easier to read.\u003c/p>","hints":["Two conditions, and both must be true. Join them with \u003ccode>AND\u003c/code>.","\u003ccode>WHERE gallery = '…' AND status = '…'\u003c/code>, with both values in single quotes and spelled exactly as stored. Expect \u003cb>11 rows\u003c/b>."],"explain":"\u003ccode>AND\u003c/code> keeps only rows where both conditions hold. The Garnet Parure (in conservation) and the Wren Tapestry (on loan) drop out.","ordered":false,"setup":"base","sol":"ISA1IDB5TBUbHx8VWVJONkNULQsMCBFIHms0OTw9VRFCO1xUEREQCh0nOyk3OTZQEhNBO1VDC0VERVRhDRMZGAMFB1JqNlxdFxcAQnkNTCA8L1MDARNZIkMRT0VeKh0NKAgBGx8RDFUW","exp":{"ncols":2,"nrows":11,"ordered":false,"unordered":"fc3dd915dcac8d4ee0d780c04fde1edd0ecf2ce102a394017200afd5d19050ce"}},{"id":"2B","room":"R2","kind":"sql","concept":"OR and parentheses","title":"Small enough to pocket","story":"Ferrante knows the east-wall cases: they only ever hold jewelry or manuscripts. Nothing bigger fits.","task":"Return the \u003ccode>title\u003c/code> and \u003ccode>category\u003c/code> of every Larkspur Gallery artifact whose category is \u003cb>Jewelry\u003c/b> or \u003cb>Manuscript\u003c/b> (any status).","notes":"\u003cp>\u003ccode>OR\u003c/code> keeps a row if \u003cb>either\u003c/b> condition is true.\u003c/p>\n\u003cp>\u003cb>Watch the order of operations.\u003c/b> \u003ccode>AND\u003c/code> is evaluated before \u003ccode>OR\u003c/code>, the way multiplication comes before addition. So\u003c/p>\n\u003cpre>WHERE a AND b OR c\u003c/pre>\n\u003cp>means \u003ccode>(a AND b) OR c\u003c/code>, and any row where \u003ccode>c\u003c/code> is true sneaks in, whatever \u003ccode>a\u003c/code> says. Use parentheses to say what you mean:\u003c/p>\n\u003cpre>SELECT guard_name, check_time\nFROM guard_rounds\nWHERE gallery = 'Rotunda'\n  AND (guard_name = 'M. Ferrante' OR guard_name = 'T. Abernathy');\u003c/pre>\n\u003cp>A shorter way to write an OR list on one column is \u003ccode>IN\u003c/code>: \u003ccode>guard_name IN ('M. Ferrante', 'T. Abernathy')\u003c/code>.\u003c/p>","hints":["Look at your result before submitting: is \u003ci>every\u003c/i> row actually in the Larkspur Gallery?","\u003ccode>AND\u003c/code> binds tighter than \u003ccode>OR\u003c/code>. Wrap the two category tests in parentheses, or use \u003ccode>category IN ('Jewelry', 'Manuscript')\u003c/code>. Expect \u003cb>8 rows\u003c/b>."],"explain":"Without parentheses, \u003ccode>gallery = … AND category = 'Jewelry' OR category = 'Manuscript'\u003c/code> is read as \u003ci>(Larkspur jewelry) OR (any manuscript anywhere)\u003c/i>, which drags in manuscripts from other galleries. Parentheses, or \u003ccode>IN\u003c/code>, keep the gallery filter applied to both.","ordered":false,"setup":"base","sol":"ISA1IDB5TBUbHx8VWVJONkRUFQoLHHlrPi4/SxAfGR5INERYHQtzMjtoPiRSDBIcGRdfLhAMUkI1BAFGHxEHGVM3FB5BMkJIVW9ZRTJjKEFaCBIEEBVCJUkRT0VeLxZaCQ0AElRQOiANNFFFFwIWFwoNUUFVJhIeAAFOJVlBBkJQXg==","exp":{"ncols":2,"nrows":8,"ordered":false,"unordered":"45f668f504710d32643a1b4c3f695e2b49009a70124cc1f0b862140b72a09b78"}},{"id":"2C","room":"R2","kind":"sql","concept":"BETWEEN (inclusive ranges)","title":"The nineties acquisition drive","story":"The registrar remembers the missing piece arriving during the museum's 1990s acquisition drive: \u003ci>acquired between 1990 and 1999, both years included\u003c/i>.","task":"Return the \u003ccode>title\u003c/code> and \u003ccode>year_acquired\u003c/code> of Larkspur Gallery artifacts acquired from \u003cb>1990 through 1999, inclusive\u003c/b>.","notes":"\u003cp>\u003ccode>BETWEEN low AND high\u003c/code> is \u003cb>inclusive\u003c/b>: both endpoints count. These two are identical:\u003c/p>\n\u003cpre>WHERE check_time BETWEEN '21:00' AND '22:00'\nWHERE check_time >= '21:00' AND check_time \u003c= '22:00'\u003c/pre>\n\u003cp>\u003ccode>&gt;\u003c/code> and \u003ccode>&lt;\u003c/code> exclude the endpoints. When a request says \"both included\", that difference decides whether boundary rows appear.\u003c/p>","hints":["Check your boundaries: is a piece acquired in 1999 in your result? What about one acquired in 1990?","\u003ccode>BETWEEN 1990 AND 1999\u003c/code> includes both endpoints; \u003ccode>&gt; 1990 AND &lt; 1999\u003c/code> drops them. Expect \u003cb>9 rows\u003c/b>."],"explain":"\u003ccode>BETWEEN\u003c/code> is inclusive, so the Book of Hours (1990) and the Orrin Locket (1999) both qualify. \u003ccode>&gt;= 1990 AND &lt;= 1999\u003c/code> is equivalent.","ordered":false,"setup":"base","sol":"ISA1IDB5TBUbHx8VWVJUMlFDLQQaFAZEHgQWYTUiOj8NNF9dHgAaERpCAmslIzYiMFJKNlxdFxcARU4NSy0TGRgDBQdfd3dQHgkcFwoKZkFSKj00VQtINkJuEwYIEBpfCQVSKTYkIjdoGRAAS1xJRTJjKEFDUkpJTg==","exp":{"ncols":2,"nrows":9,"ordered":false,"unordered":"f59c39960dbb98882a297108d282588dd10e49e3f68594889d7ad3473dd2aaa9"}},{"id":"3A","room":"R3","kind":"sql","concept":"ORDER BY","title":"The last all-clear","story":"The guards log every round in \u003ccode>guard_rounds\u003c/code>. Reyes needs the Larkspur Gallery's night in order, to find the window when the case went unwatched.","task":"Return the \u003ccode>guard_name\u003c/code>, \u003ccode>check_time\u003c/code> and \u003ccode>note\u003c/code> of every guard round in the \u003cb>Larkspur Gallery\u003c/b>, \u003cb>earliest first\u003c/b>.","notes":"\u003cp>A table has \u003cb>no built-in order\u003c/b>. Without \u003ccode>ORDER BY\u003c/code>, rows come back in whatever order is convenient for the database. Here that's the order they were typed into the log, which is scrambled.\u003c/p>\n\u003cpre>SELECT guard_name, gallery, check_time\nFROM guard_rounds\nORDER BY check_time DESC;\u003c/pre>\n\u003cp>\u003ccode>ASC\u003c/code> (ascending, the default) sorts low to high, A to Z, earliest to latest. \u003ccode>DESC\u003c/code> reverses it.\u003c/p>\n\u003cp>Clause order is fixed: \u003ccode>SELECT → FROM → WHERE → ORDER BY → LIMIT\u003c/code>.\u003c/p>","hints":["Without \u003ccode>ORDER BY\u003c/code>, rows come back in the order they were entered, and the log was typed up out of order.","Filter to the gallery, then \u003ccode>ORDER BY check_time\u003c/code>. Ascending is the default. Expect \u003cb>6 rows\u003c/b>."],"explain":"Sorted by time, the gap jumps out: Okafor's all-clear at 22:05 is the last confirmed check. Nobody entered the Larkspur Gallery again until Ferrante found the case empty at 23:40.","ordered":true,"setup":"base","sol":"ISA1IDB5TAYHCgEUKhxMOlUdUgYRABBGMxUbBhZcVRxCI1U7NDc2KFNKGQAADywCGgdDM0M7JS08NzYNCwAeBxYCDFIQdxd9ExcSFgNYHkE1Ch8cEABUcDp+ICE8N1NvNUERAxYTHi1ZPl1USQ==","exp":{"ncols":3,"nrows":6,"ordered":true,"unordered":"8beef817f198ea33c34419048e7650de0c003fd63f655ca7fec03065fbc54035","hOrdered":"5c028112926581f2cf96f7f0e252fc3f5a567ee14837354c4a5af3c16b607f75"}},{"id":"3B","room":"R3","kind":"sql","concept":"Multi-column ORDER BY and LIMIT","title":"The insurer's top five","story":"The loss adjuster wants to know what else is exposed while the doors are shut.","task":"Return the \u003ccode>title\u003c/code>, \u003ccode>gallery\u003c/code> and \u003ccode>insured_value\u003c/code> of the \u003cb>five most valuable artifacts currently On Display\u003c/b> anywhere in the museum, highest value first. Several share the same value, so \u003cb>break ties alphabetically by title\u003c/b>.","notes":"\u003cp>\u003ccode>ORDER BY\u003c/code> can take several columns. Rows are sorted by the first column; the second column only decides the order \u003cb>among rows that tie\u003c/b> on the first.\u003c/p>\n\u003cpre>SELECT gallery, check_time, guard_name\nFROM guard_rounds\nORDER BY gallery ASC, check_time DESC;\u003c/pre>\n\u003cp>Each column gets its own \u003ccode>ASC\u003c/code>/\u003ccode>DESC\u003c/code>.\u003c/p>\n\u003cp>\u003ccode>LIMIT n\u003c/code> keeps the first \u003ci>n\u003c/i> rows \u003cb>after\u003c/b> sorting, which makes it the standard \"top N\" tool.\u003c/p>","hints":["Three pieces: a \u003ccode>WHERE\u003c/code> for the status, an \u003ccode>ORDER BY\u003c/code> with two columns, and \u003ccode>LIMIT\u003c/code>.","\u003ccode>ORDER BY insured_value DESC, title ASC\u003c/code>, then \u003ccode>LIMIT 5\u003c/code>. Don't forget the status filter: the second most valuable piece in the building is sitting in storage."],"explain":"Four pieces are insured at exactly $750,000, and only three of them fit in the top five. The \u003ccode>title\u003c/code> tie-breaker decides which three, deterministically: Amber Chess Set, Bronze Heron and Lacquered Screen of Ten Cranes.","ordered":true,"setup":"base","sol":"ISA1IDB5TBUbHx8VWVJKNlxdFxcASVNEAhIHGRYUKgRMO0VUeCMrKj4NDw4eBxYTARtCOTpmOiArIFNeGAAGHgBQSFIKGF4RNgwKFR9MFUZ4JCE0MCANFWkRGwsKEAFICD4ECh8FEFJpEmNyXkUNDAdBCUEzODB6OTtgHmQRR14=","exp":{"ncols":3,"nrows":5,"ordered":true,"unordered":"be529fe550bb25fe7f4858a3ad209a2e2c8bdb0a0e47d52e5ac5a290f3f6f331","hOrdered":"7c89837e36c91fadd4c98601bb50ff7f29a4ea9969cef2b81c9ff6d7600d8018"}},{"id":"3C","room":"R3","kind":"mc","concept":"Ties and LIMIT","title":"Why the lists disagree","story":"Reyes's sergeant ran the insurer's query \u003cb>without\u003c/b> the title tie-breaker. His fifth artifact is different from yours, and when he reran it later on another machine he got yet another.","task":"Why do his results change?","notes":"\u003cp>SQL only guarantees the order you ask for. If two rows are equal on \u003cb>every\u003c/b> \u003ccode>ORDER BY\u003c/code> column, the database is free to return them either way round, and that can change between runs, versions or machines.\u003c/p>\n\u003cp>\u003ccode>LIMIT\u003c/code> then simply keeps the first \u003ci>n\u003c/i> rows it receives. If the cut-off falls in the middle of a tie, which tied rows survive is not defined.\u003c/p>","options":[{"id":"a","text":"Postgres deliberately shuffles results on every run so that no row is favored."},{"id":"b","text":"Rows that tie on every ORDER BY column have no defined order, so LIMIT can cut off a different tied row."},{"id":"c","text":"LIMIT is applied before ORDER BY, so five rows are picked first and only sorted afterwards."},{"id":"d","text":"NUMERIC values can't be compared exactly, so equal values sort unpredictably."}],"hints":["Think about what \u003ccode>ORDER BY insured_value DESC\u003c/code> says about four artifacts that are all worth exactly $750,000. Does it say anything about which comes first?","SQL only guarantees the order you ask for. Postgres doesn't shuffle on purpose and doesn't apply \u003ccode>LIMIT\u003c/code> first, but among tied rows any order is legal."],"explain":"\u003cb>(b)\u003c/b> is right. When rows tie on every sort column, their relative order is undefined. It often looks stable, but it can change with the data, the query plan, the version or the machine. \u003ccode>LIMIT\u003c/code> just keeps the first \u003ci>n\u003c/i> rows it receives, so a cut-off inside a tie isn't reproducible. A tie-breaker on a column that is unique makes the result deterministic. (And \u003ccode>LIMIT\u003c/code> is always applied \u003ci>after\u003c/i> \u003ccode>ORDER BY\u003c/code>.)","setup":"base","mc":"ce12367ca8fdc1cb7c6036e6bb8fd1c00b295fb1ef75e8f657ff760b0e447c57"},{"id":"F","room":"RF","kind":"sql","concept":"Combining conditions","title":"Name the piece","story":"You have every clue. Reyes wants one query she can read back to the board.","task":"Write \u003cb>one query\u003c/b> that applies every clue (Larkspur Gallery · On Display · Jewelry or Manuscript · acquired 1990 through 1999 · insured for more than $250,000) and returns the \u003ccode>title\u003c/code> and \u003ccode>case_number\u003c/code> of the single artifact that fits.","notes":"\u003cp>Conditions stack. Several \u003ccode>AND\u003c/code>s narrow the result step by step; an \u003ccode>OR\u003c/code> group inside parentheses (or an \u003ccode>IN\u003c/code> list) offers alternatives.\u003c/p>\n\u003cpre>SELECT guard_name, check_time, note\nFROM guard_rounds\nWHERE gallery IN ('Rotunda', 'Garden Court')\n  AND check_time BETWEEN '22:00' AND '23:30'\n  AND guard_name \u003c> 'M. Ferrante';\u003c/pre>\n\u003cp>Build it one condition at a time and \u003cb>Run\u003c/b> after each. Watching the row count shrink is the fastest way to catch a mistake.\u003c/p>","hints":["Start from your Room 2 queries and keep adding \u003ccode>AND\u003c/code> conditions. Run after each one and watch the row count fall.","Five conditions. The Jewelry/Manuscript pair needs parentheses (or \u003ccode>IN\u003c/code>), the year range is inclusive, and \"more than\" is \u003ccode>&gt;\u003c/code>. You should end with exactly \u003cb>1 row\u003c/b>."],"explain":"The near misses tell the story: the Vell Diadem (acquired 2000), the Book of Hours (insured under the threshold), the Marrow Psalter (exactly $250,000, not more), the Garnet Parure (in conservation) and the Enamel Pendant (acquired 1989). One piece is left.","ordered":false,"setup":"base","sol":"ISA1IDB5TBUbHx8VWVJONkNULQsMCBFIHms0OTw9VRFCO1xUEREQCh0nOyk3OTZQEhNBO1VDC0VERVRhDRMZGAMFB1JqNlxdFxcAQnkNTCA8L1MDARNZIkMRT0VeKh0NKAgBGx8RDFUndxBwPCFZBhJZCQYdGQpQPDwNfxd7FxIcCQFUS01STD4RGwdeNEJYAhFeTHkNTCA8L1MJEBNfCFFSAxAQFxZJTCM3PyQ1MDwNZgkIQkU4KzcNXVhLUnlQVTNjExBYHBYMFxZJMxcTBwYVVUwNZQUBQlVJXg==","exp":{"ncols":2,"nrows":1,"ordered":false,"unordered":"3cabcc47ede0ce21c64f383409b1baa754edffff0721cb6aab87e3c178530193"}}],"gate":{"sql":[{"attempts":2,"minutes":4},{"attempts":2,"minutes":4},{"attempts":2,"minutes":3}],"mc":[{"attempts":1,"minutes":2},{"attempts":1,"minutes":2},{"attempts":1,"minutes":2}]}};
+const PGLITE_URL = 'https://cdn.jsdelivr.net/npm/@electric-sql/pglite@0.5.8/dist/index.js';
+
+/* ---------------- helpers ---------------- */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const now = () => Date.now();
+const MIN = 60000;
+const BUILD = k => k === 'table' || k === 'rows' || k === 'plan';   // puzzles whose statements persist
+const ICON = {
+  check: '<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>',
+  x: '<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7"/></svg>',
+  lock: '<svg viewBox="0 0 16 16" fill="none" stroke="#8b8471" stroke-width="1.6"><rect x="3.5" y="7" width="9" height="6.5" rx="1.2"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2"/></svg>',
+};
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 3200); }
+
+/* ---------------- state (per-browser convenience only) ---------------- */
+const KEY = 'ds620.caselab.' + CFG.lab.code + '.' + CFG.term;
+function fresh() { return { v: 1, started: false, current: CFG.puzzles[0].id, p: {} }; }
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.v === 1 ? s : fresh(); } catch { return fresh(); } }
+let S = load();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} }
+function P(id) { return S.p[id] || (S.p[id] = { status: 'open', attempts: 0, first: null, h: [null, null], ah: [0, 0], help: null, ha: 0, draft: '', choice: null, found: {} }); }
+const solved = id => ['passed', 'assisted'].includes(P(id).status);
+const pz = id => CFG.puzzles.find(p => p.id === id);
+const roomPuzzles = rid => CFG.puzzles.filter(p => p.room === rid);
+function roomUnlocked(rid) {
+  const i = CFG.rooms.findIndex(r => r.id === rid);
+  return i === 0 || roomPuzzles(CFG.rooms[i - 1].id).every(p => solved(p.id)) && roomUnlocked(CFG.rooms[i - 1].id);
+}
+const roomDone = rid => roomPuzzles(rid).every(p => solved(p.id));
+
+/* ---------------- database ---------------- */
+let db = null, PGliteCls = null, dbReady = false, curSetup = null, dirtyFor = null, dbQueue = Promise.resolve();
+function setDb(state, txt) { $('#dbdot').className = 'dot ' + state; $('#dbtxt').textContent = txt; }
+// serialize all database work so a reset can never interleave with a query
+const withDb = fn => (dbQueue = dbQueue.then(fn, fn));
+async function resetTo(setup) {
+  await db.exec('RESET ROLE; DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT USAGE ON SCHEMA public TO PUBLIC;');
+  for (const r of (CFG.roles || [])) await db.exec(`DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '${r}') THEN EXECUTE 'DROP OWNED BY ${r}'; EXECUTE 'DROP ROLE ${r}'; END IF; END $$;`);
+  if (CFG.setups[setup]) await db.exec(CFG.setups[setup]);
+  curSetup = setup; dirtyFor = null;
+}
+function ensureSetup(p, force) {
+  return withDb(async () => {
+    if (!dbReady) return;
+    if (force || curSetup !== p.setup || (dirtyFor && dirtyFor !== p.id)) { setDb('busy', 'Preparing the evidence…'); await resetTo(p.setup); setDb('ok', 'Database ready'); }
+  }).then(refreshSchema);
+}
+async function initDb() {
+  setDb('busy', 'Opening case files…');
+  dbReady = false;
+  try {
+    if (!PGliteCls) PGliteCls = (await import(PGLITE_URL)).PGlite;
+    if (db) { try { await db.close(); } catch {} }
+    // dates and timestamps stay as plain text, so results never depend on the viewer's time zone
+    db = new PGliteCls({ parsers: { 1082: v => v, 1114: v => v, 1184: v => v } });
+    await db.query('SELECT 1');
+    dbReady = true; curSetup = null;
+    const p = pz(S.current) || CFG.puzzles[0];
+    await ensureSetup(p, true);
+    setDb('ok', 'Database ready');
+  } catch (e) {
+    console.error(e);
+    dbReady = false;
+    setDb('err', 'Database failed to load');
+    $('#btnStart').textContent = 'Database failed to load. Refresh to retry.';
+    toast('The database engine could not load. Check your connection and refresh.');
+  }
+  const b = $('#btnStart');
+  if (dbReady) { b.disabled = false; b.textContent = S.started ? 'Return to the case' : 'Open the case file'; }
+}
+// Evidence and query runs happen inside a transaction that is rolled back; build puzzles persist.
+function runSql(sql, persist) {
+  return withDb(async () => {
+    if (!persist) await db.exec('BEGIN');
+    try {
+      const res = await db.exec(sql, { rowMode: 'array' });
+      if (persist) dirtyFor = S.current;
+      const withCols = res.filter(r => r.fields && r.fields.length);
+      if (withCols.length) { const r = withCols[withCols.length - 1]; return { fields: r.fields.map(f => f.name), rows: r.rows, n: res.length }; }
+      const last = res[res.length - 1];
+      return { fields: [], rows: [], affected: res.length === 1 ? (res[0].affectedRows || 0) : null, n: res.length };
+    } catch (e) { if (persist) dirtyFor = S.current; throw e; }
+    finally { if (!persist) { try { await db.exec('ROLLBACK'); } catch {} } }
+  });
+}
+const qArr = (sql, params) => withDb(async () => (await db.query(sql, params, { rowMode: 'array' })).rows);
+
+function errNote(e, sql) {
+  const code = e && e.code, msg = (e && e.message) || String(e);
+  const m = msg.match(/column "([^"]+)"/);
+  switch (code) {
+    case '42703': {
+      const name = m ? m[1] : '';
+      return (/\s|[A-Z]/.test(name) || /"/.test(sql))
+        ? `Postgres read <code>${esc(name)}</code> as a <b>column name</b>. Text values go in <b>single quotes</b>; double quotes are only for column and table names.`
+        : `There's no column called <code>${esc(name)}</code> here. Check the spelling against the tables on the right. If you meant a text value, wrap it in single quotes.`;
+    }
+    case '42P01': return `That table doesn't exist${CFG.lab.id === 1 ? '' : ' (yet)'}. The panel on the right lists every table in the database right now.`;
+    case '42601': return `Syntax error. Check the clause order (<code>SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY → LIMIT</code>), commas between items, matching parentheses, and that every text value is closed with a single quote.`;
+    case '22P02': return `A value doesn't fit its column's type, for example text where a number belongs, or a number written with <code>$</code> or commas.`;
+    case '42883': return `The two sides of a comparison have different types (for example, a number compared with text).`;
+    case '22001': return `The text is longer than the column's <code>VARCHAR(n)</code> limit allows.`;
+    case '22003': return `The number has more digits than the column's <code>NUMERIC(p,s)</code> allows. <i>p − s</i> digits fit before the decimal point.`;
+    case '22007': case '22008': return `That isn't a valid date or time. Hours run 0–23 and minutes 0–59.`;
+    case '23502': return `A required (<code>NOT NULL</code>) column was left empty.`;
+    case '23505': return `A row with that key already exists. Primary keys must be unique.`;
+    case '23503': return `A foreign key points at a row that doesn't exist (or you tried to remove a row that others still point at). The DETAIL line names the key.`;
+    case '23514': return `A <code>CHECK</code> rule on the table rejected this value.`;
+    case '42702': return `Two of the joined tables have a column with this name. Qualify it with the table alias, e.g. <code>g.name</code>.`;
+    case '42P07': return `That table already exists. Use <code>DROP TABLE</code> to remove it first, or press <b>Reset puzzle</b>.`;
+    case '42803': return CFG.lab.id === 1 ? `This query uses a feature from a later week. Everything here can be solved with SELECT, FROM, WHERE, ORDER BY and LIMIT.`
+      : /WHERE/.test(msg) ? `Aggregates such as <code>COUNT(*)</code> can't be used in <code>WHERE</code>, which runs before grouping. Filter groups with <code>HAVING</code>.`
+      : `Every selected column must be in <code>GROUP BY</code> or inside an aggregate function.`;
+    case '21000': return `A subquery used as a single value returned more than one row.`;
+    case '42830': return `A foreign key must reference a primary key (or unique) column.`;
+    default: return '';
+  }
+}
+
+/* ---------------- hint gating ---------------- */
+function gate(p, st) {
+  const G = CFG.gate[p.kind === 'mc' ? 'mc' : 'sql'];
+  const t = now();
+  const steps = [
+    { base: st.first || t, attBase: 0, open: st.h[0] != null, prereq: true, cfg: G[0] },
+    { base: st.h[0] || t, attBase: st.ah[0], open: st.h[1] != null, prereq: st.h[0] != null, cfg: G[1] },
+    { base: st.h[1] || t, attBase: st.ah[1], open: st.help != null, prereq: st.h[1] != null, cfg: G[2] },
+  ];
+  return steps.map(s => {
+    const attLeft = Math.max(0, s.cfg.attempts - (st.attempts - s.attBase));
+    const msLeft = Math.max(0, s.base + s.cfg.minutes * MIN - t);
+    return { ...s, ready: s.prereq && (attLeft === 0 || msLeft === 0), attLeft, msLeft };
+  });
+}
+const fmt = ms => { const s = Math.ceil(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+
+/* ---------------- render: chrome ---------------- */
+function renderTrack() {
+  const cur = pz(S.current);
+  $('#track').innerHTML = CFG.rooms.map(r => {
+    const cls = roomDone(r.id) ? 'done' : (cur && cur.room === r.id ? 'on' : '');
+    return `<span class="pill ${cls}">${esc(r.short)}</span>`;
+  }).join('');
+}
+function icon(id) {
+  const st = P(id), p = pz(id);
+  if (st.status === 'passed') return `<span class="ico passed" aria-label="Passed">${ICON.check}</span>`;
+  if (st.status === 'assisted') return `<span class="ico assisted" aria-label="Assisted">${ICON.check}</span>`;
+  if (!roomUnlocked(p.room)) return `<span class="ico locked" aria-label="Locked">${ICON.lock}</span>`;
+  return `<span class="ico" aria-label="Open"></span>`;
+}
+function renderSide() {
+  $('#side').innerHTML = CFG.rooms.map(r => {
+    const unlocked = roomUnlocked(r.id);
+    return `<div class="room ${unlocked ? '' : 'locked'}"><h3>${unlocked ? '' : ICON.lock.replace('<svg', '<svg width="12" height="12"')}${esc(r.name)}</h3>` +
+      roomPuzzles(r.id).map(p => `<button class="pz ${S.current === p.id ? 'cur' : ''}" data-go="${p.id}" ${unlocked ? '' : 'disabled'} type="button">
+        ${icon(p.id)}<span class="t"><b>${esc(p.title)}</b><small>${esc(p.concept)}</small></span></button>`).join('') + `</div>`;
+  }).join('');
+}
+async function refreshSchema() {
+  const box = $('#schema'); if (!box || !dbReady) return;
+  let tables = [];
+  try {
+    const names = (await qArr(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = 'public' AND c.relkind = 'r' ORDER BY c.oid`, [])).map(r => r[0]);
+    for (const t of names) tables.push({ name: t, info: await CANON.introspect(qArr, t) });
+  } catch (e) { console.error(e); }
+  const pk = (t, c) => t.info.pk.includes(c);
+  const fk = (t, c) => t.info.fks.find(f => f.col === c);
+  const html = `<h3>Tables right now</h3>` + (tables.length ? tables.map(t => `
+    <div class="tbl"><div class="tn"><span>${esc(t.name)}</span><button type="button" data-peek="${esc(t.name)}">Preview</button></div>
+    ${t.info.cols.map(c => `<div class="col"><span class="cn">${esc(c.name)}${pk(t, c.name) ? '<span class="pk">PK</span>' : ''}${fk(t, c.name) ? `<span class="pk" style="background:var(--ink3)" title="references ${esc(fk(t, c.name).table)}">FK</span>` : ''}</span><span class="ct">${esc(c.type)}${c.notnull && !pk(t, c.name) ? ' · NOT NULL' : ''}</span></div>`).join('')}
+    </div>`).join('') : `<p class="small">No tables yet. Anything you create appears here.</p>`) +
+    `<p class="small"><span class="pk">PK</span> primary key: unique for every row.${CFG.lab.id > 1 ? ' <span class="pk" style="background:var(--ink3)">FK</span> foreign key: must match a key in another table.' : ''}</p>
+     <p class="small">${BUILD(pz(S.current).kind) ? 'Changes you make here persist until you reset the puzzle.' : 'Your queries never change the data.'} <button class="linkbtn" type="button" id="btnReset">${BUILD(pz(S.current).kind) ? 'Reset puzzle' : 'Reload the database'}</button></p>`;
+  if (box._last !== html) { box.innerHTML = html; box._last = html; }
+}
+
+/* ---------------- render: puzzle ---------------- */
+let timer = null;
+function renderMain() {
+  const p = pz(S.current), st = P(p.id), room = CFG.rooms.find(r => r.id === p.room);
+  if (!st.first) { st.first = now(); save(); }
+  const finalDone = solved('F');
+  const roomBlurb = roomPuzzles(p.room)[0].id === p.id && !solved(p.id) ? `<p class="small" style="margin:0 0 10px">${esc(room.blurb)}</p>` : '';
+  let html = '';
+  if (p.id === 'F' && finalDone) html += revealHtml();
+  html += `<article class="panel case">
+    <div class="meta"><span>${esc(room.name)}</span><span class="tag">${esc(p.concept)}</span>${statusTag(st)}</div>
+    <h2>${esc(p.title)}</h2>${roomBlurb}
+    <p class="story">${p.story}</p>
+    <div class="task"><span class="lbl">${p.kind === 'error' ? 'Prove it' : BUILD(p.kind) ? 'Your task' : 'Evidence requested'}</span>${p.task}</div>
+    <div id="regnotes"></div>
+    <details class="notes" ${S.notesOpen && S.notesOpen[p.id] ? 'open' : ''} data-notes="${p.id}"><summary>Field notes: ${esc(p.concept)}</summary><div class="nb">${p.notes}</div></details>
+  </article>`;
+  html += p.kind === 'mc' ? mcHtml(p, st) : workHtml(p, st);
+  html += `<section class="panel hints" id="hints"></section>`;
+  $('#main').innerHTML = html;
+  if (p.kind !== 'mc') $('#sql').value = st.draft || '';
+  renderRegNotes(); renderHints(); renderTrack(); renderSide();
+  clearInterval(timer); timer = setInterval(renderHints, 1000);
+}
+function renderRegNotes() {
+  const p = pz(S.current), st = P(p.id), box = $('#regnotes'); if (!box) return;
+  if (!p.onError) { box.innerHTML = ''; return; }
+  const found = Object.keys(p.onError).filter(c => st.found && st.found[c]);
+  box.innerHTML = found.length ? `<div class="regnotes"><span class="hl">${esc(p.notesTitle || "Registrar's corrections")} · ${found.length} of ${Object.keys(p.onError).length} found</span>${found.map(c => `<p>${p.onError[c]}</p>`).join('')}</div>` : '';
+}
+function statusTag(st) {
+  if (st.status === 'passed') return `<span class="tag" style="background:var(--pass-soft);color:var(--pass)">Passed</span>`;
+  if (st.status === 'assisted') return `<span class="tag" style="background:var(--assist-soft);color:var(--assist)">Assisted</span>`;
+  return '';
+}
+function workHtml(p, st) {
+  const build = BUILD(p.kind);
+  return `<section class="panel work">
+    <div class="edhead"><span>SQL editor${build ? ' · changes persist until you reset' : ''}</span><span class="k">Ctrl/⌘ + Enter to run</span></div>
+    <label class="sr" for="sql">SQL</label>
+    <textarea class="sql" id="sql" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="${build ? 'CREATE TABLE … / INSERT INTO … / UPDATE …' : 'SELECT …&#10;FROM …&#10;WHERE …;'}"></textarea>
+    <div class="actions">
+      <button class="b primary" id="btnRun" type="button">Run</button>
+      <button class="b ev" id="btnSubmit" type="button">${build ? 'Check the evidence' : 'Submit as evidence'}</button>
+      <span class="spacer"></span>
+      ${build ? '<button class="b" id="btnResetP" type="button">Reset puzzle</button>' : ''}
+      <button class="b" id="btnClear" type="button">Clear</button>
+    </div>
+    <div class="fb" id="fb"></div>
+    <div class="results" id="results"><div class="empty">${build ? 'Run statements to build or change the table. The panel on the right shows the database as it is right now.' : 'Results appear here. Try previewing a table from the panel on the right.'}</div></div>
+  </section>`;
+}
+function mcHtml(p, st) {
+  return `<section class="panel work">
+    <div class="mc" role="radiogroup" aria-label="Answer options">
+    ${p.options.map(o => `<label class="opt ${st.choice === o.id ? 'sel' : ''}"><input type="radio" name="mc" value="${o.id}" ${st.choice === o.id ? 'checked' : ''}><span><b>${o.id.toUpperCase()}.</b> ${esc(o.text)}</span></label>`).join('')}
+    </div>
+    <div class="actions"><button class="b ev" id="btnMc" type="button">Submit answer</button></div>
+    <div class="fb" id="fb"></div>
+  </section>`;
+}
+function revealHtml() {
+  const R = CFG.reveal;
+  return `<section class="panel reveal"><span class="kick">${esc(R.kicker || CFG.lab.caseNo + ' · closed for tonight')}</span><h2>${esc(R.title)}</h2>
+    ${R.paragraphs.map(x => `<p>${x}</p>`).join('')}
+    <button class="b ev" type="button" data-report="1">Download your progress report</button></section>`;
+}
+
+function renderHints() {
+  const box = $('#hints'); if (!box) return;
+  const p = pz(S.current), st = P(p.id), g = gate(p, st);
+  const done = solved(p.id);
+  let h = `<h4>Hints</h4>`;
+  st.h.forEach((t, i) => { if (t != null) h += `<div class="hint"><span class="hl">Hint ${i + 1}</span>${p.hints[i]}</div>`; });
+  if (st.help != null) {
+    h += p.kind === 'mc'
+      ? `<div class="solution"><span class="hl">Lead detective</span>${p.explain}<p class="small" style="margin:.5em 0 0">Select the correct option and submit it to continue.</p></div>`
+      : `<div class="solution"><span class="hl">Lead detective · worked solution</span><pre>${esc(decode(p.sol))}</pre>
+         <p style="margin:.3em 0">${p.explain}</p>
+         ${done ? '' : `<button class="b" type="button" id="btnCopySol">Copy into editor</button> <span class="small">${BUILD(p.kind) ? 'Reset the puzzle, run it, then check the evidence.' : p.kind === 'error' ? 'Run it, read the error, then submit it.' : 'Run it, read the result, then submit it.'}</span>`}</div>`;
+  }
+  if (!done) {
+    const next = st.h[0] == null ? 0 : st.h[1] == null ? 1 : st.help == null ? 2 : -1;
+    if (next >= 0) {
+      const s = g[next];
+      const label = next < 2 ? `Show hint ${next + 1}` : 'Call in the lead detective';
+      const wait = s.ready ? '' : `<span class="wait">Unlocks after ${s.attLeft} more ${BUILD(p.kind) ? 'check' : 'submission'}${s.attLeft === 1 ? '' : 's'} or in ${fmt(s.msLeft)}</span>`;
+      if (next === 2 && S._confirm === p.id) {
+        h += `<div class="confirm"><b>Call in the lead detective?</b> You'll see a worked solution and an explanation. This puzzle will be marked <b>Assisted</b> on your progress report. You'll still need to ${p.kind === 'mc' ? 'pick and submit the answer' : 'run the solution and submit it'} yourself.
+          <div class="row"><button class="b ev" type="button" id="btnHelpYes">Call her in</button><button class="b" type="button" id="btnHelpNo">Keep working</button></div></div>`;
+      } else {
+        h += `<div class="hrow"><button class="hb ${next === 2 ? 'help' : ''}" type="button" id="btnHint" data-step="${next}" ${s.ready ? '' : 'disabled'}>${label}</button>${wait}</div>`;
+      }
+    }
+    if (st.h[0] == null && st.help == null) h += `<p class="small" style="margin:0">Hints unlock as you work, after a few ${BUILD(p.kind) ? 'checks' : 'submissions'} or a few minutes. The field notes above cover everything this puzzle needs.</p>`;
+  } else if (st.h[0] == null && st.help == null) {
+    h += `<p class="small" style="margin:0">Solved without hints.</p>`;
+  }
+  if (box._last !== h) { box.innerHTML = h; box._last = h; }
+}
+function decode(b64) {
+  const k = CFG.ok, bin = atob(b64), out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i) ^ k.charCodeAt(i % k.length);
+  return new TextDecoder().decode(out);
+}
+
+/* ---------------- results ---------------- */
+function showResult(r, sql) {
+  const box = $('#results');
+  if (!r.fields.length) {
+    const verb = (sql.trim().match(/^\w+/) || [''])[0].toUpperCase();
+    const what = { CREATE: 'Table created.', DROP: 'Dropped.', ALTER: 'Table altered.', INSERT: `${r.affected} row${r.affected === 1 ? '' : 's'} inserted.`,
+      UPDATE: `${r.affected} row${r.affected === 1 ? '' : 's'} updated.`, DELETE: `${r.affected} row${r.affected === 1 ? '' : 's'} deleted.` }[verb] || 'Statement ran.';
+    const persisted = BUILD(pz(S.current).kind);
+    box.innerHTML = `<div class="okmsg">${r.n > 1 ? `${r.n} statements ran.` : what}${persisted ? '' : ' <span class="small">(Rolled back: this puzzle never changes the data.)</span>'}</div>`;
+    return;
+  }
+  const n = r.rows.length, shown = r.rows.slice(0, 250);
+  box.innerHTML = `<div class="rhead"><span><b>${n}</b> row${n === 1 ? '' : 's'} · ${r.fields.length} column${r.fields.length === 1 ? '' : 's'}</span>${n > 250 ? '<span>Showing the first 250</span>' : ''}</div>` +
+    (n ? `<div class="tablewrap"><table class="res"><thead><tr>${r.fields.map(f => `<th>${esc(f)}</th>`).join('')}</tr></thead><tbody>` +
+      shown.map(row => `<tr>${row.map(v => v === null ? '<td><span class="null">NULL</span></td>' : `<td>${esc(CANON.cell(v))}</td>`).join('')}</tr>`).join('') +
+      `</tbody></table></div>` : `<div class="empty">No rows matched.</div>`);
+}
+function showError(e, sql) {
+  const note = errNote(e, sql);
+  $('#results').innerHTML = `<div class="err"><span class="em">ERROR: ${esc(e.message || e)}</span>${e.detail ? `<span class="det">DETAIL: ${esc(e.detail)}</span>` : ''}${note}</div>`;
+}
+function fb(kind, html) {
+  const f = $('#fb'); if (!f) return;
+  if (kind === 'bad') {
+    const p = pz(S.current), st = P(p.id), g = gate(p, st);
+    const next = st.h[0] == null ? 0 : st.h[1] == null ? 1 : st.help == null ? 2 : -1;
+    if (next >= 0 && g[next].ready) html += `<div style="margin-top:6px"><button class="linkbtn" type="button" data-jump="hints">${next < 2 ? 'Hint ' + (next + 1) : 'The lead detective'} is available below ↓</button></div>`;
+  }
+  f.className = 'fb show ' + kind; f.innerHTML = html;
+}
+function noteFound(p, e) {
+  if (!p.onError || !e || !p.onError[e.code]) return;
+  const st = P(p.id); st.found = st.found || {};
+  if (!st.found[e.code]) { st.found[e.code] = true; save(); renderRegNotes(); toast(p.notesToast || "A registrar's correction has been added to the case notes."); }
+}
+
+/* ---------------- actions ---------------- */
+let busy = false;
+function setBusy(b) { busy = b; ['#btnRun', '#btnSubmit', '#btnResetP'].forEach(s => { const el = $(s); if (el) el.disabled = b; }); }
+async function doRun() {
+  if (busy) return;
+  if (!dbReady) { toast('The database is still loading.'); return; }
+  const p = pz(S.current), st = P(p.id), sql = $('#sql').value.trim();
+  if (!sql) { fb('warn', 'Write some SQL first.'); return; }
+  st.draft = $('#sql').value; save();
+  setBusy(true);
+  try { await ensureSetup(p); const r = await runSql(sql, BUILD(p.kind)); showResult(r, sql); }
+  catch (e) { showError(e, sql); noteFound(p, e); }
+  setBusy(false); $('#fb').className = 'fb';
+  if (BUILD(p.kind)) refreshSchema();
+}
+function pass(p) {
+  const st = P(p.id);
+  st.status = st.help != null ? 'assisted' : 'passed'; save();
+  fb('good', `<b>Evidence accepted.</b><div class="debrief">${p.explain}</div>${nextBtn(p)}`);
+  afterSolve(p);
+}
+function failMsg(msg) { const st = P(S.current); st.attempts++; save(); fb('bad', msg); renderHints(); }
+async function doSubmit() {
+  if (busy) return;
+  if (!dbReady) { toast('The database is still loading.'); return; }
+  const p = pz(S.current), st = P(p.id);
+  if (solved(p.id)) { fb('good', 'Already accepted. This one is in the file.'); return; }
+  const sql = $('#sql').value.trim();
+  st.draft = $('#sql').value; save();
+  setBusy(true);
+  try {
+    if (p.kind === 'plan') {
+      let r;
+      try { r = await runSql('EXPLAIN (FORMAT JSON) ' + p.target, false); } catch (e) { failMsg(`The test query couldn't run: ${esc(e.message)}. Press <b>Reset puzzle</b> if a table has been changed.`); return; }
+      const c = CANON.checkPlan(p, CANON.planNodes(r.rows[0][0]));
+      c.pass ? pass(p) : failMsg(`<b>Not yet.</b> For the target query the planner chose: <code>${esc(c.chose)}</code>. ${p.failNote || ''}`);
+      return;
+    }
+    if (p.kind === 'table') {
+      const tables = p.tables || [p.table];
+      const got = await CANON.introspectAll(qArr, tables);
+      const iss = CANON.compareTables(tables, p.tables ? p.exp : { [p.table]: p.exp }, got);
+      iss.length ? failMsg(`<b>Not yet.</b><ul style="margin:.4em 0 0;padding-left:20px">${iss.slice(0, 4).map(x => `<li>${x}</li>`).join('')}</ul>${iss.length > 4 ? `<p class="small">…and ${iss.length - 4} more.</p>` : ''}<p class="small" style="margin:.4em 0 0">To change a table, <code>DROP TABLE</code> it and create it again, or press <b>Reset puzzle</b>.</p>`) : pass(p);
+      return;
+    }
+    if (p.kind === 'rows') {
+      let r;
+      try { r = await runSql(p.check, false); } catch (e) { failMsg(`The check ran into an error: <code>${esc(e.message)}</code>. ${p.checkErrNote || 'If a table itself was changed, press <b>Reset puzzle</b>.'}`); return; }
+      const iss = CANON.compareRows(p.exp, r.fields, r.rows, p.reveal, p);
+      iss.length ? failMsg(`<b>Not yet.</b><ul style="margin:.4em 0 0;padding-left:20px">${iss.slice(0, 4).map(x => `<li>${x}</li>`).join('')}</ul>${iss.length > 4 ? `<p class="small">…and ${iss.length - 4} more.</p>` : ''}`) : pass(p);
+      return;
+    }
+    if (!sql) { fb('warn', 'Write a query first.'); return; }
+    await ensureSetup(p);
+    let r = null, err = null;
+    try { r = await runSql(sql, false); showResult(r, sql); } catch (e) { err = e; showError(e, sql); noteFound(p, e); }
+    if (p.kind === 'error') {
+      const c = CANON.checkError(p, err);
+      if (c.pass) return pass(p);
+      return failMsg({
+        noerror: "That statement ran without an error, so it proves nothing: the database accepted it. (Nothing was kept; attempts here are rolled back.)",
+        othererror: `That failed, but not for the reason the task is about. Look for the specific refusal the task describes.`,
+        othertable: `Right kind of error, but on a different table than the one in question.`,
+      }[c.reason]);
+    }
+    if (err) return failMsg("That query didn't run, so there's nothing to submit yet. Fix the error shown below and try again.");
+    const res = await CANON.check(CFG.salt, p.id, p.exp, r.fields, r.rows);
+    if (res.pass) return pass(p);
+    failMsg({
+      cols: `The request calls for <b>${p.exp.ncols}</b> column${p.exp.ncols === 1 ? '' : 's'}; your result has ${r.fields.length}. Return exactly the columns asked for.`,
+      rows: `Your query returned <b>${r.rows.length}</b> row${r.rows.length === 1 ? '' : 's'}, which isn't the set the task asks for. Re-read the request and test each condition.`,
+      order: `Right rows, <b>wrong order</b>. Check your <code>ORDER BY</code>.`,
+      values: `Right number of rows and columns, but the contents don't match. Check each condition, and that you returned the columns requested.`,
+    }[res.reason]);
+  } finally { setBusy(false); }
+}
+function nextBtn(p) {
+  const idx = CFG.puzzles.findIndex(x => x.id === p.id);
+  const nxt = CFG.puzzles.slice(idx + 1).concat(CFG.puzzles.slice(0, idx)).find(x => !solved(x.id) && roomUnlocked(x.room));
+  return nxt ? `<div style="margin-top:10px"><button class="b primary" type="button" data-go="${nxt.id}">Next: ${esc(nxt.title)} →</button></div>` : '';
+}
+function afterSolve(p) {
+  const r = CFG.rooms.find(x => x.id === p.room);
+  if (roomDone(p.room)) {
+    const i = CFG.rooms.indexOf(r);
+    if (CFG.rooms[i + 1]) toast(`${r.short} cleared. ${CFG.rooms[i + 1].name} is open.`);
+  }
+  if (p.id === 'F') {
+    renderMain();
+    fb('good', `<b>Evidence accepted.</b><div class="debrief">${p.explain}</div>`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  renderSide(); renderTrack();
+  const meta = $('.case .meta'); if (meta) meta.insertAdjacentHTML('beforeend', statusTag(P(p.id)));
+  renderHints();
+}
+async function doMc() {
+  const p = pz(S.current), st = P(p.id);
+  const sel = document.querySelector('input[name=mc]:checked');
+  if (!sel) { fb('warn', 'Choose an answer first.'); return; }
+  if (solved(p.id)) { fb('good', 'Already accepted.'); return; }
+  st.choice = sel.value;
+  const h = await CANON.sha(CFG.salt + '|' + p.id + '|MC|' + sel.value);
+  if (h === p.mc) {
+    st.status = st.help != null ? 'assisted' : 'passed'; save();
+    fb('good', `<b>Correct.</b><div class="debrief">${p.explain}</div>${nextBtn(p)}`);
+    afterSolve(p);
+  } else failMsg('Not quite. Re-read the field notes and think about what the query actually promises.');
+}
+function go(id) {
+  const p = pz(id); if (!p || !roomUnlocked(p.room)) return;
+  S.current = id; S._confirm = null; save(); renderMain(); ensureSetup(p);
+  if (window.innerWidth < 780) $('#main').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ---------------- report + verification code ---------------- */
+const B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+async function makeCode(statuses, minutes, nonce) {
+  const N = statuses.length;
+  let v = BigInt(CFG.codeVersion);
+  v = (v << 6n) | BigInt(CFG.lab.id);
+  for (const s of statuses) v = (v << 2n) | BigInt(s);
+  v = (v << 24n) | BigInt(minutes);
+  v = (v << 16n) | BigInt(nonce);
+  const hexW = Math.ceil((48 + 2 * N) / 4);
+  const msg = `DS620|${CFG.term}|${CFG.lab.id}|${v.toString(16).padStart(hexW, '0')}`;
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(CFG.secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(msg)));
+  const m32 = BigInt(((mac[0] << 24) >>> 0) + (mac[1] << 16) + (mac[2] << 8) + mac[3]);
+  let full = (v << 32n) | m32;
+  const nChars = Math.ceil((80 + 2 * N) / 5);
+  let s = '';
+  for (let i = 0; i < nChars; i++) { s = B32[Number(full & 31n)] + s; full >>= 5n; }
+  return CFG.lab.code + '-' + s.match(/.{1,4}/g).join('-');
+}
+let REPORT = null;
+async function openReport() {
+  const t = new Date();
+  const items = CFG.puzzles.map(p => ({ p, s: P(p.id).status === 'passed' ? 1 : P(p.id).status === 'assisted' ? 2 : 0 }));
+  const minutes = Math.floor((t.getTime() - Date.UTC(2026, 0, 1)) / MIN);
+  const nonce = crypto.getRandomValues(new Uint16Array(1))[0];
+  $('#rErr').classList.add('hidden');
+  let code;
+  try { code = await makeCode(items.map(x => x.s), minutes, nonce); }
+  catch (e) { code = 'Unavailable'; $('#rErr').textContent = 'This browser could not create a verification code. Open the lab over https (the GitHub Pages link) and try again.'; $('#rErr').classList.remove('hidden'); }
+  REPORT = { t, items, code };
+  $('#rWhen').textContent = 'Generated ' + t.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' });
+  const lab = { 1: 'Passed', 2: 'Assisted', 0: 'Not passed' }, cls = { 1: 'passed', 2: 'assisted', 0: 'none' };
+  $('#rList').innerHTML = items.map(({ p, s }) => `<li><span class="ico ${cls[s]}">${s ? ICON.check : ICON.x}</span><span><b>${esc(p.id)}</b> · ${esc(p.title)}</span><span class="st ${cls[s]}">${lab[s]}</span></li>`).join('');
+  $('#rCode').textContent = code;
+  $('#dlgReport').showModal();
+}
+function pdf() {
+  if (!REPORT) return;
+  if (!window.jspdf) { $('#rErr').textContent = "The PDF tool didn't load. Refresh the page and try again."; $('#rErr').classList.remove('hidden'); return; }
+  const { jsPDF } = window.jspdf;
+  const d = new jsPDF({ unit: 'pt', format: 'letter' });
+  const W = 612, L = 54, N = REPORT.items.length;
+  const RH = N <= 10 ? 36 : N <= 13 ? 31 : 28;
+  d.setFillColor(22, 24, 29); d.rect(0, 0, W, 104, 'F');
+  d.setFillColor(154, 118, 48); d.rect(0, 104, W, 4, 'F');
+  d.setFont('helvetica', 'bold'); d.setFontSize(9); d.setTextColor(214, 190, 128);
+  d.text(`${CFG.lab.course.toUpperCase()}  ·  CASE LAB  ·  ${CFG.lab.week.toUpperCase()}`, L, 42, { charSpace: 1.2 });
+  d.setFont('times', 'bold'); d.setFontSize(24); d.setTextColor(255, 255, 255);
+  d.text(`${CFG.lab.caseNo}: ${CFG.lab.title}`, L, 76);
+  d.setFont('helvetica', 'bold'); d.setFontSize(13); d.setTextColor(34, 33, 29);
+  d.text('Progress report', L, 146);
+  d.setFont('helvetica', 'normal'); d.setFontSize(10); d.setTextColor(106, 100, 85);
+  d.text('Generated ' + REPORT.t.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'long' }), L, 163);
+  d.text('UTC ' + REPORT.t.toISOString().replace('T', ' ').slice(0, 16), L, 177);
+  let y = 210;
+  const col = { 1: [45, 122, 75], 2: [168, 111, 12], 0: [165, 55, 44] }, lab = { 1: 'PASSED', 2: 'ASSISTED', 0: 'NOT PASSED' };
+  d.setDrawColor(221, 212, 194); d.setLineWidth(.8); d.line(L, y - 16, W - L, y - 16);
+  for (const { p, s } of REPORT.items) {
+    const [r, g, b] = col[s]; const cx = L + 10, cy = y - 4;
+    d.setFillColor(r, g, b); d.circle(cx, cy, 8, 'F');
+    d.setDrawColor(255, 255, 255); d.setLineWidth(1.8);
+    if (s) { d.line(cx - 4, cy + .3, cx - 1.2, cy + 3.2); d.line(cx - 1.2, cy + 3.2, cx + 4.2, cy - 3.4); }
+    else { d.line(cx - 3.3, cy - 3.3, cx + 3.3, cy + 3.3); d.line(cx + 3.3, cy - 3.3, cx - 3.3, cy + 3.3); }
+    d.setFont('helvetica', 'bold'); d.setFontSize(11); d.setTextColor(34, 33, 29);
+    d.text(`${p.id}`, L + 28, y); d.text(p.title, L + 56, y);
+    d.setFont('helvetica', 'normal'); d.setFontSize(9); d.setTextColor(106, 100, 85);
+    d.text(p.concept, L + 56, y + 11);
+    d.setFont('helvetica', 'bold'); d.setFontSize(9.5); d.setTextColor(r, g, b);
+    d.text(lab[s], W - L, y, { align: 'right' });
+    d.setDrawColor(233, 226, 211); d.setLineWidth(.6); d.line(L, y + RH - 16, W - L, y + RH - 16);
+    y += RH;
+  }
+  const c = [0, 0, 0]; REPORT.items.forEach(x => c[x.s]++);
+  y += 6;
+  d.setFont('helvetica', 'normal'); d.setFontSize(10.5); d.setTextColor(34, 33, 29);
+  d.text(`Passed: ${c[1]}     Assisted: ${c[2]}     Not passed: ${c[0]}     (of ${N})`, L, y);
+  y += 22;
+  d.setFillColor(241, 230, 201); d.setDrawColor(154, 118, 48); d.setLineWidth(1.2);
+  d.roundedRect(L, y, W - 2 * L, 64, 6, 6, 'FD');
+  d.setFont('helvetica', 'bold'); d.setFontSize(8.5); d.setTextColor(154, 118, 48);
+  d.text('VERIFICATION CODE', W / 2, y + 20, { align: 'center', charSpace: 1.2 });
+  d.setFont('courier', 'bold'); d.setFontSize(N > 12 ? 15 : 17); d.setTextColor(22, 24, 29);
+  d.text(REPORT.code, W / 2, y + 46, { align: 'center' });
+  y += 88;
+  d.setFont('helvetica', 'normal'); d.setFontSize(9); d.setTextColor(106, 100, 85);
+  d.text(d.splitTextToSize('This report contains no names or personal information. Upload it to this week\'s Case Lab assignment in Canvas. Your instructor checks the verification code; editing this file invalidates it.', W - 2 * L), L, y);
+  const stamp = REPORT.t.toISOString().slice(0, 16).replace(/[-:T]/g, '');
+  d.save(`DS620_${CFG.lab.code}_CaseLab_Report_${stamp}.pdf`);
+}
+
+/* ---------------- events ---------------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('button, [data-go]');
+  if (!t) return;
+  if (t.dataset.go) return go(t.dataset.go);
+  if (t.dataset.jump) { $('#' + t.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (t.dataset.peek) {
+    const ta = $('#sql');
+    if (ta) { ta.value = `SELECT *\nFROM ${t.dataset.peek}\nLIMIT 10;`; P(S.current).draft = ta.value; save(); doRun(); } else toast('Preview works on SQL puzzles.');
+    return;
+  }
+  if (t.dataset.report) return openReport();
+  switch (t.id) {
+    case 'btnRun': return doRun();
+    case 'btnSubmit': return doSubmit();
+    case 'btnClear': { const ta = $('#sql'); ta.value = ''; P(S.current).draft = ''; save(); ta.focus(); return; }
+    case 'btnMc': return doMc();
+    case 'btnHint': {
+      const step = +t.dataset.step, st = P(S.current);
+      if (step === 2) { S._confirm = S.current; boxReset(); renderHints(); return; }
+      st.h[step] = now(); st.ah[step] = st.attempts; save(); boxReset(); renderHints(); return;
+    }
+    case 'btnHelpYes': { const st = P(S.current); st.help = now(); st.ha = st.attempts; S._confirm = null; save(); boxReset(); renderHints(); return; }
+    case 'btnHelpNo': { S._confirm = null; boxReset(); renderHints(); return; }
+    case 'btnCopySol': { const ta = $('#sql'); ta.value = decode(pz(S.current).sol); P(S.current).draft = ta.value; save(); ta.focus(); return; }
+    case 'btnReset': case 'btnResetP': {
+      ensureSetup(pz(S.current), true).then(() => {
+        const r = $('#results'); if (r) r.innerHTML = `<div class="okmsg">The database is back at this puzzle's starting point.</div>`;
+        toast('Reset to the starting point.');
+      });
+      return;
+    }
+    case 'btnReport': return openReport();
+    case 'rClose': return $('#dlgReport').close();
+    case 'rPdf': return pdf();
+    case 'btnStart': S.started = true; save(); return enter();
+  }
+});
+function boxReset() { const b = $('#hints'); if (b) b._last = null; }
+document.addEventListener('change', e => {
+  if (e.target.name === 'mc') { document.querySelectorAll('.opt').forEach(o => o.classList.toggle('sel', o.contains(e.target))); P(S.current).choice = e.target.value; save(); }
+});
+document.addEventListener('toggle', e => {
+  const d = e.target; if (d.dataset && d.dataset.notes) { S.notesOpen = S.notesOpen || {}; S.notesOpen[d.dataset.notes] = d.open; save(); }
+}, true);
+let draftT = null;
+document.addEventListener('input', e => {
+  if (e.target.id === 'sql') { clearTimeout(draftT); draftT = setTimeout(() => { P(S.current).draft = e.target.value; save(); }, 300); }
+});
+document.addEventListener('keydown', e => {
+  if (e.target.id !== 'sql') return;
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); doRun(); }
+  if (e.key === 'Tab' && !e.shiftKey) { e.preventDefault(); const ta = e.target, s = ta.selectionStart; ta.setRangeText('  ', s, ta.selectionEnd, 'end'); }
+});
+
+/* ---------------- boot ---------------- */
+function enter() {
+  $('#intro').classList.add('hidden'); $('#app').classList.remove('hidden');
+  const cur = pz(S.current);
+  if (!cur || !roomUnlocked(cur.room)) S.current = CFG.puzzles.find(p => roomUnlocked(p.room) && !solved(p.id))?.id || CFG.puzzles[0].id;
+  renderMain(); ensureSetup(pz(S.current));
+}
+function boot() {
+  $('#kick').textContent = `${CFG.lab.course} · Case Lab · ${CFG.lab.week}`;
+  $('#introTitle').textContent = CFG.lab.title;
+  $('#introKick').textContent = CFG.intro.kicker;
+  $('#introStory').innerHTML = CFG.intro.paragraphs.map(p => `<p class="s">${p}</p>`).join('');
+  $('#introHow').innerHTML = CFG.how.map(x => `<li>${x}</li>`).join('');
+  renderTrack();
+  if (S.started) enter(); else $('#intro').classList.remove('hidden');
+  initDb();
+}
+boot();
+
+</script>
+</body>
+</html>
